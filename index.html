@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Chamados Técnicos (Realtime DB)</title>
+    <!-- Incluindo Tailwind CSS para um design moderno e responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importando o ícone da aplicação -->
+    <link rel="icon" href="https://placehold.co/32x32/1e40af/ffffff?text=C" type="image/png">
+    <style>
+        /* Estilo para a fonte e melhorias visuais */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Fundo cinza claro */
+        }
+        /* Efeito de transição para botões e inputs */
+        input, select, button {
+            transition: all 0.2s ease-in-out;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .form-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .form-fieldset {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <!-- Container Principal -->
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <!-- Cabeçalho -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Painel de Controle de Chamados</h1>
+            <p class="text-gray-600 mt-2">Gerenciamento de suporte e instalação de fechaduras digitais.</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Seção do Formulário (Coluna 1) -->
+            <div class="lg:col-span-1">
+                <div class="form-section">
+                    <h2 class="text-2xl font-semibold mb-6 border-b pb-4">Registrar Novo Atendimento</h2>
+                    <form id="service-call-form" class="space-y-4">
+                        
+                        <div class="space-y-4">
+                             <h3 class="text-lg font-medium text-gray-800">Dados do Cliente</h3>
+                             <div>
+                                <label for="client-name" class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
+                                <input type="text" id="client-name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div>
+                                <label for="client-phone" class="block text-sm font-medium text-gray-700">Telefone</label>
+                                <input type="tel" id="client-phone" placeholder="(11) 99999-9999" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div>
+                                <label for="client-address" class="block text-sm font-medium text-gray-700">Endereço</label>
+                                <input type="text" id="client-address" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 form-fieldset">
+                            <h3 class="text-lg font-medium text-gray-800">Dados do Produto e Serviço</h3>
+                            <div>
+                                <label for="serial-number" class="block text-sm font-medium text-gray-700">Serial Number (SN) da Fechadura</label>
+                                <input type="text" id="serial-number" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="store" class="block text-sm font-medium text-gray-700">Loja da Compra</label>
+                                <input type="text" id="store" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="purchase-date" class="block text-sm font-medium text-gray-700">Data da Compra</label>
+                                <input type="date" id="purchase-date" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="request-date" class="block text-sm font-medium text-gray-700">Data da Solicitação</label>
+                                <input type="date" id="request-date" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="schedule-date" class="block text-sm font-medium text-gray-700">Data do Agendamento</label>
+                                <input type="date" id="schedule-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="execution-date" class="block text-sm font-medium text-gray-700">Data da Execução</label>
+                                <input type="date" id="execution-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="service-type" class="block text-sm font-medium text-gray-700">Tipo de Atendimento</label>
+                                <select id="service-type" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="Instalação">Instalação</option>
+                                    <option value="Garantia">Garantia</option>
+                                    <option value="Suporte">Suporte</option>
+                                    <option value="Avulso">Avulso</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="customer-value" class="block text-sm font-medium text-gray-700">Valor a Pagar (Cliente)</label>
+                                <input type="number" id="customer-value" step="0.01" min="0" placeholder="R$ 0,00" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="provider-value" class="block text-sm font-medium text-gray-700">Valor a Pagar (Prestador)</label>
+                                <input type="number" id="provider-value" step="0.01" min="0" placeholder="R$ 0,00" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                        <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 !mt-8">
+                            Salvar Chamado
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Seção da Lista de Chamados (Coluna 2) -->
+            <div class="lg:col-span-2">
+                 <div class="mb-6 bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Consultar Chamados</h3>
+                    <input type="text" id="search-input" placeholder="Buscar por nome do cliente ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                 </div>
+
+                 <h2 class="text-2xl font-semibold mb-6 text-gray-900">Chamados Registrados</h2>
+                 <div id="loading-state" class="text-center p-8">
+                     <p class="text-gray-500">Carregando chamados do banco de dados...</p>
+                 </div>
+                 <div id="service-calls-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Cards de chamados serão inseridos aqui -->
+                 </div>
+                 <div id="empty-state" class="hidden text-center p-10 border-2 border-dashed rounded-lg mt-6">
+                    <p class="text-gray-500">Nenhum chamado registrado ainda.</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Script para interagir com o Firebase -->
+    <script type="module">
+        // =================================================================================
+        // 1. CONFIGURAÇÃO E INICIALIZAÇÃO DO FIREBASE
+        // =================================================================================
+        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMATq-iNDjKNUXQhzdZgtKay4HOgK_m7Q",
+            authDomain: "controle-de-chamados-tecnicos.firebaseapp.com",
+            projectId: "controle-de-chamados-tecnicos",
+            storageBucket: "controle-de-chamados-tecnicos.firebasestorage.app",
+            messagingSenderId: "884804211370",
+            appId: "1:884804211370:web:e08d61e3824165110e76d3",
+            measurementId: "G-J8Z060J1S9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        
+        // =================================================================================
+        // 2. ESTADO DA APLICAÇÃO E REFERÊNCIAS DO DOM
+        // =================================================================================
+        
+        let allCallsData = {}; // Guarda todos os chamados para filtragem local
+
+        const serviceForm = document.getElementById('service-call-form');
+        const callsList = document.getElementById('service-calls-list');
+        const loadingState = document.getElementById('loading-state');
+        const emptyState = document.getElementById('empty-state');
+        const submitButton = document.getElementById('submit-button');
+        const searchInput = document.getElementById('search-input');
+        
+        document.getElementById('request-date').valueAsDate = new Date();
+
+        // =================================================================================
+        // 3. AUTENTICAÇÃO E BUSCA INICIAL DE DADOS
+        // =================================================================================
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("Usuário autenticado (anonimamente):", user.uid);
+                fetchServiceCalls();
+            } else {
+                signInAnonymously(auth).catch((error) => console.error("Erro na autenticação anônima:", error));
+            }
+        });
+        
+        /**
+         * Busca e escuta por atualizações no nó de chamados em tempo real.
+         */
+        function fetchServiceCalls() {
+            const callsRef = ref(db, 'service_calls');
+            
+            onValue(callsRef, (snapshot) => {
+                loadingState.style.display = 'none';
+                if (snapshot.exists()) {
+                    allCallsData = snapshot.val(); // Armazena os dados brutos
+                } else {
+                    allCallsData = {}; // Limpa os dados se o nó estiver vazio
+                }
+                renderFilteredCalls(); // Renderiza a lista com base nos filtros atuais
+            }, (error) => {
+                 console.error("Erro ao buscar chamados:", error);
+                 loadingState.innerHTML = '<p class="text-red-500">Erro ao carregar dados.</p>';
+            });
+        }
+
+        // =================================================================================
+        // 4. FUNÇÕES DE MANIPULAÇÃO DE DADOS (CRUD)
+        // =================================================================================
+        
+        async function saveServiceCall(callData) {
+            try {
+                const callsRef = ref(db, 'service_calls');
+                await push(callsRef, callData);
+                console.log("Chamado salvo com sucesso.");
+                return true;
+            } catch (error) {
+                console.error("Erro ao salvar chamado: ", error);
+                alert("Ocorreu um erro ao salvar o chamado. Tente novamente.");
+                return false;
+            }
+        }
+        
+        // =================================================================================
+        // 5. FUNÇÕES PARA MANIPULAR A INTERFACE (UI)
+        // =================================================================================
+        
+        /**
+         * Filtra os dados de `allCallsData` e chama a função para renderizar a lista.
+         */
+        function renderFilteredCalls() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            if (Object.keys(allCallsData).length === 0) {
+                 displayCalls({});
+                 return;
+            }
+
+            const filteredCalls = Object.keys(allCallsData).reduce((acc, key) => {
+                const call = allCallsData[key];
+                const clientName = (call.clientName || '').toLowerCase();
+                const serialNumber = (call.serialNumber || '').toLowerCase();
+
+                if (clientName.includes(searchTerm) || serialNumber.includes(searchTerm)) {
+                    acc[key] = call;
+                }
+                return acc;
+            }, {});
+
+            displayCalls(filteredCalls);
+        }
+
+        /**
+         * Renderiza a lista de chamados na tela a partir de um objeto de dados.
+         * @param {object} callsObject - Um objeto contendo os chamados a serem exibidos.
+         */
+        function displayCalls(callsObject) {
+            callsList.innerHTML = ''; 
+
+            if (Object.keys(callsObject).length === 0) {
+                const searchTerm = searchInput.value;
+                if (searchTerm) {
+                    emptyState.innerHTML = `<p class="text-gray-500">Nenhum resultado encontrado para "<strong>${searchTerm}</strong>".</p>`;
+                } else {
+                    emptyState.innerHTML = `<p class="text-gray-500">Nenhum chamado registrado ainda.</p>`;
+                }
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            // Itera sobre as chaves do objeto (que são os IDs únicos de cada chamado)
+            for (const callId in callsObject) {
+                const call = callsObject[callId];
+                
+                const formatDate = (dateString) => {
+                    if (!dateString) return 'N/A';
+                    const [year, month, day] = dateString.split('-');
+                    return `${day}/${month}/${year}`;
+                };
+                
+                const formatCurrency = (value) => {
+                    if (value === null || value === undefined || value === '') return 'N/A';
+                    return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                }
+
+                const card = document.createElement('div');
+                card.className = 'card p-5 space-y-3 flex flex-col';
+                card.setAttribute('data-id', callId);
+
+                card.innerHTML = `
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-lg text-blue-800">${call.clientName || 'Cliente não informado'}</h3>
+                            <span class="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-1 rounded">${call.serviceType}</span>
+                        </div>
+                        <div class="border-t pt-3 space-y-2 text-sm">
+                            <p><strong class="font-medium text-gray-600">Telefone:</strong> ${call.clientPhone || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Endereço:</strong> ${call.clientAddress || 'N/A'}</p>
+                        </div>
+                        <div class="border-t pt-3 mt-3 space-y-2 text-sm">
+                            <p><strong class="font-medium text-gray-600">S/N:</strong> ${call.serialNumber}</p>
+                            <p><strong class="font-medium text-gray-600">Loja:</strong> ${call.store} | <strong class="font-medium text-gray-600">Data Compra:</strong> ${formatDate(call.purchaseDate)}</p>
+                            <p><strong class="font-medium text-gray-600">Solicitação:</strong> ${formatDate(call.requestDate)}</p>
+                            <p><strong class="font-medium text-gray-600">Agendamento:</strong> ${formatDate(call.scheduleDate)}</p>
+                            <p><strong class="font-medium text-gray-600">Execução:</strong> ${formatDate(call.executionDate)}</p>
+                        </div>
+                    </div>
+                    <div class="border-t pt-3 mt-3 flex justify-between text-sm">
+                        <div class="text-green-700">
+                            <span class="font-medium block">Cliente Paga</span>
+                            <strong>${formatCurrency(call.customerValue)}</strong>
+                        </div>
+                        <div class="text-red-700 text-right">
+                             <span class="font-medium block">Prestador Recebe</span>
+                            <strong>${formatCurrency(call.providerValue)}</strong>
+                        </div>
+                    </div>
+                `;
+                
+                callsList.appendChild(card);
+            }
+        }
+        
+        // =================================================================================
+        // 6. EVENT LISTENERS
+        // =================================================================================
+        
+        serviceForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Salvando...';
+            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const callData = {
+                clientName: document.getElementById('client-name').value,
+                clientPhone: document.getElementById('client-phone').value,
+                clientAddress: document.getElementById('client-address').value,
+                serialNumber: document.getElementById('serial-number').value,
+                store: document.getElementById('store').value,
+                purchaseDate: document.getElementById('purchase-date').value,
+                requestDate: document.getElementById('request-date').value,
+                scheduleDate: document.getElementById('schedule-date').value,
+                executionDate: document.getElementById('execution-date').value,
+                serviceType: document.getElementById('service-type').value,
+                customerValue: document.getElementById('customer-value').value,
+                providerValue: document.getElementById('provider-value').value,
+                createdAt: new Date().toISOString()
+            };
+
+            const success = await saveServiceCall(callData);
+            
+            if (success) {
+                serviceForm.reset();
+                document.getElementById('request-date').valueAsDate = new Date();
+            }
+            
+            submitButton.disabled = false;
+            submitButton.textContent = 'Salvar Chamado';
+            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        });
+
+        // Adiciona o listener para a barra de busca
+        searchInput.addEventListener('input', renderFilteredCalls);
+
+    </script>
+</body>
+</html>
+
