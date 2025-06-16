@@ -84,7 +84,10 @@
                                     <option value="Cancelado">Cancelado</option>
                                 </select>
                             </div>
-                            <!-- CAMPO MODELO COM OPÇÕES ORDENADAS -->
+                            <div>
+                                <label for="technician-name" class="block text-sm font-medium text-gray-700">Nome do Técnico</label>
+                                <input type="text" id="technician-name" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
                             <div>
                                 <label for="lock-model" class="block text-sm font-medium text-gray-700">Modelo da Fechadura</label>
                                 <select id="lock-model" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -144,6 +147,10 @@
                                 <label for="provider-value" class="block text-sm font-medium text-gray-700">Valor a Pagar (Prestador)</label>
                                 <input type="number" id="provider-value" step="0.01" min="0" placeholder="R$ 0,00" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
+                             <div>
+                                <label for="settlement-date" class="block text-sm font-medium text-gray-700">Data da Quitação</label>
+                                <input type="date" id="settlement-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
                         </div>
                         <div class="flex flex-col space-y-2 !mt-8">
                             <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -162,7 +169,7 @@
                  <div class="mb-6 bg-white p-4 rounded-lg shadow">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Consultar Chamados</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input type="text" id="search-input" placeholder="Buscar por nome ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <input type="text" id="search-input" placeholder="Buscar por nome, técnico ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         <select id="filter-status" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="Todos">Todos os Status</option>
                             <option value="Aberto">Aberto</option>
@@ -253,6 +260,7 @@
                 clientName: document.getElementById('client-name').value,
                 clientPhone: document.getElementById('client-phone').value,
                 clientAddress: document.getElementById('client-address').value,
+                technicianName: document.getElementById('technician-name').value,
                 lockModel: document.getElementById('lock-model').value,
                 serialNumber: document.getElementById('serial-number').value,
                 requestDate: document.getElementById('request-date').value,
@@ -264,6 +272,7 @@
                 serviceStatus: document.getElementById('service-status').value,
                 customerValue: document.getElementById('customer-value').value,
                 providerValue: document.getElementById('provider-value').value,
+                settlementDate: document.getElementById('settlement-date').value,
                 createdAt: allCallsData[callId]?.createdAt || new Date().toISOString()
             };
 
@@ -309,6 +318,7 @@
             document.getElementById('client-phone').value = call.clientPhone || '';
             document.getElementById('client-address').value = call.clientAddress || '';
             document.getElementById('service-status').value = call.serviceStatus || 'Aberto';
+            document.getElementById('technician-name').value = call.technicianName || '';
             document.getElementById('lock-model').value = call.lockModel || 'Alpha';
             document.getElementById('serial-number').value = call.serialNumber || '';
             document.getElementById('request-date').value = call.requestDate || '';
@@ -319,6 +329,7 @@
             document.getElementById('service-type').value = call.serviceType || 'Instalação';
             document.getElementById('customer-value').value = call.customerValue || '';
             document.getElementById('provider-value').value = call.providerValue || '';
+            document.getElementById('settlement-date').value = call.settlementDate || '';
 
             formTitle.textContent = 'Editando Chamado';
             submitButton.textContent = 'Atualizar Chamado';
@@ -345,7 +356,8 @@
             if (searchTerm) {
                  filteredCalls = filteredCalls.filter(([, call]) => 
                     (call.clientName || '').toLowerCase().includes(searchTerm) ||
-                    (call.serialNumber || '').toLowerCase().includes(searchTerm)
+                    (call.serialNumber || '').toLowerCase().includes(searchTerm) ||
+                    (call.technicianName || '').toLowerCase().includes(searchTerm)
                 );
             }
             displayCalls(Object.fromEntries(filteredCalls));
@@ -393,6 +405,7 @@
                         <div class="border-t pt-3 space-y-2 text-sm">
                             <p><strong class="font-medium text-gray-600">Telefone:</strong> ${call.clientPhone || 'N/A'}</p>
                             <p><strong class="font-medium text-gray-600">Endereço:</strong> ${call.clientAddress || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Técnico:</strong> ${call.technicianName || 'N/A'}</p>
                         </div>
                         <div class="border-t pt-3 mt-3 space-y-2 text-sm">
                             <p><strong class="font-medium text-gray-600">Modelo:</strong> ${call.lockModel || 'N/A'}</p>
@@ -408,6 +421,7 @@
                                 <strong class="font-medium text-gray-600 text-xs">OBS (Pós):</strong>
                                 ${formatObs(call.obsPost)}
                             </div>
+                            <p><strong class="font-medium text-gray-600">Quitação:</strong> ${formatDate(call.settlementDate)}</p>
                         </div>
                     </div>
                     <div class="border-t pt-3 mt-3 flex justify-between items-center text-sm">
