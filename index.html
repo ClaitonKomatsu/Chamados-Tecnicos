@@ -202,6 +202,13 @@
                             <input type="date" id="settlement-date-end" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         </div>
                     </div>
+                     <!-- BOTÃO DE EXPORTAR -->
+                    <div class="mt-4 pt-4 border-t">
+                         <button id="export-csv-button" class="w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            <i class="fas fa-file-csv"></i>
+                            Exportar para CSV
+                        </button>
+                    </div>
                  </div>
                  
                  <!-- SOMA DOS TOTAIS FILTRADOS -->
@@ -259,6 +266,7 @@
         // 2. ESTADO DA APLICAÇÃO E REFERÊNCIAS DO DOM
         // =================================================================================
         let allCallsData = {};
+        let currentFilteredData = {};
         const form = document.getElementById('service-call-form');
         const callsList = document.getElementById('service-calls-list');
         const loadingState = document.getElementById('loading-state');
@@ -275,6 +283,7 @@
         const formTitle = document.getElementById('form-title');
         const callNumberInput = document.getElementById('call-number');
         const clientPhoneInput = document.getElementById('client-phone');
+        const exportCsvButton = document.getElementById('export-csv-button');
         
         // =================================================================================
         // 3. AUTENTICAÇÃO E BUSCA DE DADOS
@@ -377,7 +386,7 @@
             const call = allCallsData[callId];
             if (!call) return;
             
-            form.reset(); // Limpa o formulário antes de preencher
+            form.reset();
             document.getElementById('edit-call-id').value = callId;
             callNumberInput.value = call.callNumber || '';
             document.getElementById('client-name').value = call.clientName || '';
@@ -408,7 +417,7 @@
         function exitEditMode() {
             form.reset();
             document.getElementById('edit-call-id').value = '';
-            setNextCallNumber(); // Define o próximo número de chamado
+            setNextCallNumber();
             formTitle.textContent = 'Registrar Novo Atendimento';
             submitButton.textContent = 'Salvar Chamado';
             cancelEditButton.style.display = 'none';
@@ -420,22 +429,22 @@
             const startDate = settlementDateStart.value;
             const endDate = settlementDateEnd.value;
 
-            let filteredCalls = Object.entries(allCallsData);
+            let filteredEntries = Object.entries(allCallsData);
 
             if (selectedStatus !== 'Todos') {
-                filteredCalls = filteredCalls.filter(([, call]) => call.serviceStatus === selectedStatus);
+                filteredEntries = filteredEntries.filter(([, call]) => call.serviceStatus === selectedStatus);
             }
 
             if (startDate) {
-                filteredCalls = filteredCalls.filter(([, call]) => call.settlementDate && call.settlementDate >= startDate);
+                filteredEntries = filteredEntries.filter(([, call]) => call.settlementDate && call.settlementDate >= startDate);
             }
 
             if (endDate) {
-                filteredCalls = filteredCalls.filter(([, call]) => call.settlementDate && call.settlementDate <= endDate);
+                filteredEntries = filteredEntries.filter(([, call]) => call.settlementDate && call.settlementDate <= endDate);
             }
 
             if (searchTerm) {
-                 filteredCalls = filteredCalls.filter(([, call]) => 
+                 filteredEntries = filteredEntries.filter(([, call]) => 
                     (call.callNumber || '').toString().toLowerCase().includes(searchTerm) ||
                     (call.clientName || '').toLowerCase().includes(searchTerm) ||
                     (call.serialNumber || '').toLowerCase().includes(searchTerm) ||
@@ -443,9 +452,9 @@
                 );
             }
             
-            const finalCallsObject = Object.fromEntries(filteredCalls);
-            displayCalls(finalCallsObject);
-            calculateAndDisplayTotals(finalCallsObject);
+            currentFilteredData = Object.fromEntries(filteredEntries);
+            displayCalls(currentFilteredData);
+            calculateAndDisplayTotals(currentFilteredData);
         }
         
         function calculateAndDisplayTotals(callsObject) {
@@ -552,6 +561,44 @@
             }
         }
         
+        function exportToCSV() {
+            const calls = Object.values(currentFilteredData);
+            if (calls.length === 0) {
+                alert("Nenhum dado para exportar. Por favor, ajuste seus filtros.");
+                return;
+            }
+
+            const headers = [
+                "Nº Chamado", "Status", "Nome Cliente", "Telefone", "Endereço", "Técnico", "Modelo", "S/N", "Loja", "Data Compra",
+                "Data Solicitação", "Data Agendamento", "Data Execução", "Data Quitação", 
+                "OBS Pré", "OBS Pós", "Tipo Atendimento", "Valor Cliente (R$)", "Valor Prestador (R$)"
+            ];
+
+            const escapeCsvCell = (cell) => {
+                if (cell === null || cell === undefined) return '';
+                const str = String(cell);
+                if (str.includes(',')) return `"${str}"`;
+                return str;
+            };
+
+            const rows = calls.map(call => [
+                call.callNumber, call.serviceStatus, call.clientName, call.clientPhone, call.clientAddress,
+                call.technicianName, call.lockModel, call.serialNumber, call.store, call.purchaseDate,
+                call.requestDate, call.scheduleDate, call.executionDate, call.settlementDate,
+                call.obsPre, call.obsPost, call.serviceType,
+                (parseFloat(call.customerValue) || 0).toFixed(2), (parseFloat(call.providerValue) || 0).toFixed(2)
+            ].map(escapeCsvCell).join(','));
+
+            const csvContent = "data:text/csv;charset=utf-8," + headers.join(',') + '\n' + rows.join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "relatorio_chamados.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         // =================================================================================
         // 6. EVENT LISTENERS
         // =================================================================================
@@ -561,6 +608,7 @@
         filterStatus.addEventListener('change', renderFilteredCalls);
         settlementDateStart.addEventListener('change', renderFilteredCalls);
         settlementDateEnd.addEventListener('change', renderFilteredCalls);
+        exportCsvButton.addEventListener('click', exportToCSV);
 
         callsList.addEventListener('click', (e) => {
             const editButton = e.target.closest('.edit-btn');
@@ -569,7 +617,6 @@
             if (deleteButton) deleteServiceCall(deleteButton.dataset.id);
         });
 
-        // MÁSCARA PARA O TELEFONE
         clientPhoneInput.addEventListener('input', (e) => {
             let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
             if (!x) return;
