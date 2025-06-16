@@ -70,7 +70,7 @@
                             </div>
                              <div>
                                 <label for="client-phone" class="block text-sm font-medium text-gray-700">Telefone</label>
-                                <input type="tel" id="client-phone" placeholder="(11) 99999-9999" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <input type="tel" id="client-phone" placeholder="(99) 99999-9999" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                              <div>
                                 <label for="client-address" class="block text-sm font-medium text-gray-700">Endereço</label>
@@ -274,6 +274,7 @@
         const totalProviderEl = document.getElementById('total-provider');
         const formTitle = document.getElementById('form-title');
         const callNumberInput = document.getElementById('call-number');
+        const clientPhoneInput = document.getElementById('client-phone');
         
         // =================================================================================
         // 3. AUTENTICAÇÃO E BUSCA DE DADOS
@@ -566,6 +567,20 @@
             const deleteButton = e.target.closest('.delete-btn');
             if (editButton) enterEditMode(editButton.dataset.id);
             if (deleteButton) deleteServiceCall(deleteButton.dataset.id);
+        });
+
+        // MÁSCARA PARA O TELEFONE
+        clientPhoneInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.substring(0, 11);
+            if (value.length > 10) {
+                value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+            } else if (value.length > 5) {
+                value = value.replace(/^(\d{2})(\d{4,5}).*/, '($1) $2-');
+            } else if (value.length > 2) {
+                value = value.replace(/^(\d{2}).*/, '($1) ');
+            }
+            e.target.value = value;
         });
     </script>
 </body>
