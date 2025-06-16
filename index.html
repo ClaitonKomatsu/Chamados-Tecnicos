@@ -84,10 +84,23 @@
                                     <option value="Cancelado">Cancelado</option>
                                 </select>
                             </div>
-                            <!-- NOVO CAMPO MODELO -->
+                            <!-- CAMPO MODELO COM OPÇÕES ORDENADAS -->
                             <div>
                                 <label for="lock-model" class="block text-sm font-medium text-gray-700">Modelo da Fechadura</label>
-                                <input type="text" id="lock-model" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <select id="lock-model" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="101">101</option>
+                                    <option value="210">210</option>
+                                    <option value="303">303</option>
+                                    <option value="5100">5100</option>
+                                    <option value="608">608</option>
+                                    <option value="610">610</option>
+                                    <option value="709">709</option>
+                                    <option value="801">801</option>
+                                    <option value="9300">9300</option>
+                                    <option value="Alpha">Alpha</option>
+                                    <option value="Alpha.VP">Alpha.VP</option>
+                                    <option value="Outra">Outra</option>
+                                </select>
                             </div>
                             <div>
                                 <label for="serial-number" class="block text-sm font-medium text-gray-700">Serial Number (SN)</label>
@@ -97,7 +110,6 @@
                                 <label for="request-date" class="block text-sm font-medium text-gray-700">Data da Solicitação</label>
                                 <input type="date" id="request-date" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
-                             <!-- CAMPO DE DATA DE AGENDAMENTO REINSERIDO -->
                             <div>
                                 <label for="schedule-date" class="block text-sm font-medium text-gray-700">Data do Agendamento</label>
                                 <input type="date" id="schedule-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -241,10 +253,10 @@
                 clientName: document.getElementById('client-name').value,
                 clientPhone: document.getElementById('client-phone').value,
                 clientAddress: document.getElementById('client-address').value,
-                lockModel: document.getElementById('lock-model').value, // Salva modelo
+                lockModel: document.getElementById('lock-model').value,
                 serialNumber: document.getElementById('serial-number').value,
                 requestDate: document.getElementById('request-date').value,
-                scheduleDate: document.getElementById('schedule-date').value, // Salva agendamento
+                scheduleDate: document.getElementById('schedule-date').value,
                 obsPre: document.getElementById('obs-pre').value,
                 executionDate: document.getElementById('execution-date').value,
                 obsPost: document.getElementById('obs-post').value,
@@ -297,10 +309,10 @@
             document.getElementById('client-phone').value = call.clientPhone || '';
             document.getElementById('client-address').value = call.clientAddress || '';
             document.getElementById('service-status').value = call.serviceStatus || 'Aberto';
-            document.getElementById('lock-model').value = call.lockModel || ''; // Carrega modelo
+            document.getElementById('lock-model').value = call.lockModel || 'Alpha';
             document.getElementById('serial-number').value = call.serialNumber || '';
             document.getElementById('request-date').value = call.requestDate || '';
-            document.getElementById('schedule-date').value = call.scheduleDate || ''; // Carrega agendamento
+            document.getElementById('schedule-date').value = call.scheduleDate || '';
             document.getElementById('obs-pre').value = call.obsPre || '';
             document.getElementById('execution-date').value = call.executionDate || '';
             document.getElementById('obs-post').value = call.obsPost || '';
@@ -350,8 +362,10 @@
             }
 
             const statusColors = {
-                'Aberto': 'bg-yellow-100 text-yellow-800', 'Agendado': 'bg-blue-100 text-blue-800',
-                'Atendido': 'bg-green-100 text-green-800', 'Cancelado': 'bg-red-100 text-red-800'
+                'Aberto': 'bg-red-100 text-red-800',
+                'Agendado': 'bg-yellow-100 text-yellow-800',
+                'Atendido': 'bg-green-100 text-green-800',
+                'Cancelado': 'bg-gray-800 text-white'
             };
             
             const formatDate = (dateString) => {
