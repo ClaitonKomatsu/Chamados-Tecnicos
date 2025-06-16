@@ -178,6 +178,32 @@
                             <option value="Cancelado">Cancelado</option>
                         </select>
                     </div>
+                    <!-- FILTRO POR DATA DE QUITAÇÃO -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t">
+                        <div>
+                            <label for="settlement-date-start" class="block text-sm font-medium text-gray-700">Quitação de:</label>
+                            <input type="date" id="settlement-date-start" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="settlement-date-end" class="block text-sm font-medium text-gray-700">Até:</label>
+                            <input type="date" id="settlement-date-end" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                 </div>
+                 
+                 <!-- SOMA DOS TOTAIS FILTRADOS -->
+                 <div id="filtered-totals" class="hidden mb-6 bg-blue-100 p-4 rounded-lg shadow text-center">
+                    <h3 class="text-lg font-semibold text-blue-900 mb-2">Totais da Consulta</h3>
+                    <div class="flex justify-around">
+                        <div class="text-green-700">
+                            <span class="font-medium block text-sm text-gray-600">Total Cliente</span>
+                            <strong id="total-customer" class="text-xl">R$ 0,00</strong>
+                        </div>
+                        <div class="text-red-700">
+                            <span class="font-medium block text-sm text-gray-600">Total Prestador</span>
+                            <strong id="total-provider" class="text-xl">R$ 0,00</strong>
+                        </div>
+                    </div>
                  </div>
 
                  <h2 class="text-2xl font-semibold mb-6 text-gray-900">Chamados Registrados</h2>
@@ -228,6 +254,11 @@
         const cancelEditButton = document.getElementById('cancel-edit-button');
         const searchInput = document.getElementById('search-input');
         const filterStatus = document.getElementById('filter-status');
+        const settlementDateStart = document.getElementById('settlement-date-start');
+        const settlementDateEnd = document.getElementById('settlement-date-end');
+        const filteredTotalsDiv = document.getElementById('filtered-totals');
+        const totalCustomerEl = document.getElementById('total-customer');
+        const totalProviderEl = document.getElementById('total-provider');
         const formTitle = document.getElementById('form-title');
         
         // =================================================================================
@@ -298,7 +329,6 @@
             if (confirm('Tem certeza que deseja excluir este chamado? Esta ação não pode ser desfeita.')) {
                 try {
                     await remove(ref(db, `service_calls/${callId}`));
-                    console.log("Chamado excluído:", callId);
                 } catch (error) {
                     console.error("Delete Error:", error);
                     alert("Erro ao excluir o chamado.");
@@ -313,6 +343,7 @@
             const call = allCallsData[callId];
             if (!call) return;
             
+            form.reset(); // Limpa o formulário antes de preencher
             document.getElementById('edit-call-id').value = callId;
             document.getElementById('client-name').value = call.clientName || '';
             document.getElementById('client-phone').value = call.clientPhone || '';
@@ -348,11 +379,23 @@
         function renderFilteredCalls() {
             const searchTerm = searchInput.value.toLowerCase();
             const selectedStatus = filterStatus.value;
+            const startDate = settlementDateStart.value;
+            const endDate = settlementDateEnd.value;
+
             let filteredCalls = Object.entries(allCallsData);
 
             if (selectedStatus !== 'Todos') {
                 filteredCalls = filteredCalls.filter(([, call]) => call.serviceStatus === selectedStatus);
             }
+
+            if (startDate) {
+                filteredCalls = filteredCalls.filter(([, call]) => call.settlementDate && call.settlementDate >= startDate);
+            }
+
+            if (endDate) {
+                filteredCalls = filteredCalls.filter(([, call]) => call.settlementDate && call.settlementDate <= endDate);
+            }
+
             if (searchTerm) {
                  filteredCalls = filteredCalls.filter(([, call]) => 
                     (call.clientName || '').toLowerCase().includes(searchTerm) ||
@@ -360,7 +403,28 @@
                     (call.technicianName || '').toLowerCase().includes(searchTerm)
                 );
             }
-            displayCalls(Object.fromEntries(filteredCalls));
+            
+            const finalCallsObject = Object.fromEntries(filteredCalls);
+            displayCalls(finalCallsObject);
+            calculateAndDisplayTotals(finalCallsObject);
+        }
+        
+        function calculateAndDisplayTotals(callsObject) {
+            const totalCustomer = Object.values(callsObject).reduce((sum, call) => sum + (parseFloat(call.customerValue) || 0), 0);
+            const totalProvider = Object.values(callsObject).reduce((sum, call) => sum + (parseFloat(call.providerValue) || 0), 0);
+            
+            const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            totalCustomerEl.textContent = formatCurrency(totalCustomer);
+            totalProviderEl.textContent = formatCurrency(totalProvider);
+            
+            const hasFilters = searchInput.value || filterStatus.value !== 'Todos' || settlementDateStart.value || settlementDateEnd.value;
+            
+            if (hasFilters && Object.keys(callsObject).length > 0) {
+                 filteredTotalsDiv.classList.remove('hidden');
+            } else {
+                 filteredTotalsDiv.classList.add('hidden');
+            }
         }
 
         function displayCalls(callsObject) {
@@ -368,7 +432,7 @@
             const hasCalls = Object.keys(callsObject).length > 0;
             emptyState.style.display = hasCalls ? 'none' : 'block';
             if (!hasCalls) {
-                 emptyState.innerHTML = (searchInput.value || filterStatus.value !== 'Todos')
+                 emptyState.innerHTML = (searchInput.value || filterStatus.value !== 'Todos' || settlementDateStart.value || settlementDateEnd.value)
                     ? `<p class="text-gray-500">Nenhum resultado para os filtros aplicados.</p>`
                     : `<p class="text-gray-500">Nenhum chamado registrado ainda.</p>`;
             }
@@ -381,10 +445,12 @@
             };
             
             const formatDate = (dateString) => {
-                    if (!dateString) return 'N/A';
-                    const [year, month, day] = dateString.split('-');
-                    return `${day}/${month}/${year}`;
+                if (!dateString) return 'N/A';
+                const [year, month, day] = dateString.split('-');
+                return `${day}/${month}/${year}`;
             };
+            
+            const formatCurrency = (value) => (parseFloat(value) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
             for (const callId in callsObject) {
                 const call = callsObject[callId];
@@ -428,11 +494,11 @@
                         <div class="flex space-x-4">
                             <div class="text-green-700">
                                 <span class="font-medium block text-xs text-gray-500">Cliente Paga</span>
-                                <strong>${(parseFloat(call.customerValue) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+                                <strong>${formatCurrency(call.customerValue)}</strong>
                             </div>
                             <div class="text-red-700">
                                 <span class="font-medium block text-xs text-gray-500">Prestador Recebe</span>
-                                <strong>${(parseFloat(call.providerValue) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+                                <strong>${formatCurrency(call.providerValue)}</strong>
                             </div>
                         </div>
                         <div class="flex space-x-3">
@@ -452,6 +518,8 @@
         cancelEditButton.addEventListener('click', exitEditMode);
         searchInput.addEventListener('input', renderFilteredCalls);
         filterStatus.addEventListener('change', renderFilteredCalls);
+        settlementDateStart.addEventListener('change', renderFilteredCalls);
+        settlementDateEnd.addEventListener('change', renderFilteredCalls);
 
         callsList.addEventListener('click', (e) => {
             const editButton = e.target.closest('.edit-btn');
