@@ -115,6 +115,14 @@
                                 <input type="text" id="serial-number" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
+                                <label for="purchase-date" class="block text-sm font-medium text-gray-700">Data da Compra</label>
+                                <input type="date" id="purchase-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="store" class="block text-sm font-medium text-gray-700">Loja</label>
+                                <input type="text" id="store" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
                                 <label for="request-date" class="block text-sm font-medium text-gray-700">Data da Solicitação</label>
                                 <input type="date" id="request-date" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
@@ -302,6 +310,8 @@
                 technicianName: document.getElementById('technician-name').value,
                 lockModel: document.getElementById('lock-model').value,
                 serialNumber: document.getElementById('serial-number').value,
+                purchaseDate: document.getElementById('purchase-date').value,
+                store: document.getElementById('store').value,
                 requestDate: document.getElementById('request-date').value,
                 scheduleDate: document.getElementById('schedule-date').value,
                 obsPre: document.getElementById('obs-pre').value,
@@ -357,7 +367,9 @@
         }
 
         function setNextCallNumber() {
-            callNumberInput.value = calculateNextCallNumber();
+            if (!document.getElementById('edit-call-id').value) {
+                callNumberInput.value = calculateNextCallNumber();
+            }
         }
 
         function enterEditMode(callId) {
@@ -374,6 +386,8 @@
             document.getElementById('technician-name').value = call.technicianName || '';
             document.getElementById('lock-model').value = call.lockModel || 'Alpha';
             document.getElementById('serial-number').value = call.serialNumber || '';
+            document.getElementById('purchase-date').value = call.purchaseDate || '';
+            document.getElementById('store').value = call.store || '';
             document.getElementById('request-date').value = call.requestDate || '';
             document.getElementById('schedule-date').value = call.scheduleDate || '';
             document.getElementById('obs-pre').value = call.obsPre || '';
@@ -500,6 +514,8 @@
                         <div class="border-t pt-3 mt-3 space-y-2 text-sm">
                             <p><strong class="font-medium text-gray-600">Modelo:</strong> ${call.lockModel || 'N/A'}</p>
                             <p><strong class="font-medium text-gray-600">S/N:</strong> ${call.serialNumber || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Loja:</strong> ${call.store || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Data Compra:</strong> ${formatDate(call.purchaseDate)}</p>
                             <p><strong class="font-medium text-gray-600">Solicitação:</strong> ${formatDate(call.requestDate)}</p>
                             <p><strong class="font-medium text-gray-600">Agendamento:</strong> ${formatDate(call.scheduleDate)}</p>
                             <div class="pl-2 border-l-2">
