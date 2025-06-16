@@ -57,7 +57,12 @@
                     <form id="service-call-form" class="space-y-4">
                         <input type="hidden" id="edit-call-id">
 
-                        <div class="space-y-4">
+                        <div>
+                            <label for="call-number" class="block text-sm font-medium text-gray-700">Número do Chamado</label>
+                            <input type="text" id="call-number" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+
+                        <div class="space-y-4 form-fieldset">
                              <h3 class="text-lg font-medium text-gray-800">Dados do Cliente</h3>
                              <div>
                                 <label for="client-name" class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
@@ -169,7 +174,7 @@
                  <div class="mb-6 bg-white p-4 rounded-lg shadow">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Consultar Chamados</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input type="text" id="search-input" placeholder="Buscar por nome, técnico ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <input type="text" id="search-input" placeholder="Buscar por nº, nome, técnico ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         <select id="filter-status" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="Todos">Todos os Status</option>
                             <option value="Aberto">Aberto</option>
@@ -260,6 +265,7 @@
         const totalCustomerEl = document.getElementById('total-customer');
         const totalProviderEl = document.getElementById('total-provider');
         const formTitle = document.getElementById('form-title');
+        const callNumberInput = document.getElementById('call-number');
         
         // =================================================================================
         // 3. AUTENTICAÇÃO E BUSCA DE DADOS
@@ -274,6 +280,7 @@
             onValue(callsRef, snapshot => {
                 loadingState.style.display = 'none';
                 allCallsData = snapshot.exists() ? snapshot.val() : {};
+                setNextCallNumber();
                 renderFilteredCalls();
             }, err => {
                  console.error("Fetch Error:", err);
@@ -288,6 +295,7 @@
             e.preventDefault();
             const callId = document.getElementById('edit-call-id').value;
             const callData = {
+                callNumber: document.getElementById('call-number').value,
                 clientName: document.getElementById('client-name').value,
                 clientPhone: document.getElementById('client-phone').value,
                 clientAddress: document.getElementById('client-address').value,
@@ -339,12 +347,26 @@
         // =================================================================================
         // 5. FUNÇÕES PARA MANIPULAR A INTERFACE (UI)
         // =================================================================================
+        
+        function calculateNextCallNumber() {
+            const existingNumbers = Object.values(allCallsData).map(call => parseInt(call.callNumber)).filter(Boolean);
+            if (existingNumbers.length === 0) {
+                return 1000;
+            }
+            return Math.max(...existingNumbers) + 1;
+        }
+
+        function setNextCallNumber() {
+            callNumberInput.value = calculateNextCallNumber();
+        }
+
         function enterEditMode(callId) {
             const call = allCallsData[callId];
             if (!call) return;
             
             form.reset(); // Limpa o formulário antes de preencher
             document.getElementById('edit-call-id').value = callId;
+            callNumberInput.value = call.callNumber || '';
             document.getElementById('client-name').value = call.clientName || '';
             document.getElementById('client-phone').value = call.clientPhone || '';
             document.getElementById('client-address').value = call.clientAddress || '';
@@ -371,6 +393,7 @@
         function exitEditMode() {
             form.reset();
             document.getElementById('edit-call-id').value = '';
+            setNextCallNumber(); // Define o próximo número de chamado
             formTitle.textContent = 'Registrar Novo Atendimento';
             submitButton.textContent = 'Salvar Chamado';
             cancelEditButton.style.display = 'none';
@@ -398,6 +421,7 @@
 
             if (searchTerm) {
                  filteredCalls = filteredCalls.filter(([, call]) => 
+                    (call.callNumber || '').toString().toLowerCase().includes(searchTerm) ||
                     (call.clientName || '').toLowerCase().includes(searchTerm) ||
                     (call.serialNumber || '').toLowerCase().includes(searchTerm) ||
                     (call.technicianName || '').toLowerCase().includes(searchTerm)
@@ -465,7 +489,7 @@
                 card.innerHTML = `
                     <div class="flex-grow">
                         <div class="flex justify-between items-start mb-3">
-                            <h3 class="font-bold text-lg text-blue-800">${call.clientName || ''}</h3>
+                             <h3 class="font-bold text-lg text-blue-800">#${call.callNumber || 'N/A'} - ${call.clientName || ''}</h3>
                             <span class="text-xs font-medium px-2.5 py-1 rounded-full ${statusColorClass}">${call.serviceStatus || ''}</span>
                         </div>
                         <div class="border-t pt-3 space-y-2 text-sm">
