@@ -79,8 +79,18 @@
 
                         <div class="space-y-4 form-fieldset">
                             <h3 class="text-lg font-medium text-gray-800">Dados do Produto e Serviço</h3>
+                            <!-- NOVO CAMPO DE STATUS -->
                             <div>
-                                <label for="serial-number" class="block text-sm font-medium text-gray-700">Serial Number (SN) da Fechadura</label>
+                                <label for="service-status" class="block text-sm font-medium text-gray-700">Status do Chamado</label>
+                                <select id="service-status" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="Aberto">Aberto</option>
+                                    <option value="Agendado">Agendado</option>
+                                    <option value="Atendido">Atendido</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="serial-number" class="block text-sm font-medium text-gray-700">Serial Number (SN)</label>
                                 <input type="text" id="serial-number" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
@@ -133,7 +143,17 @@
             <div class="lg:col-span-2">
                  <div class="mb-6 bg-white p-4 rounded-lg shadow">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Consultar Chamados</h3>
-                    <input type="text" id="search-input" placeholder="Buscar por nome do cliente ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <input type="text" id="search-input" placeholder="Buscar por nome ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <!-- NOVO FILTRO DE STATUS -->
+                        <select id="filter-status" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="Todos">Todos os Status</option>
+                            <option value="Aberto">Aberto</option>
+                            <option value="Agendado">Agendado</option>
+                            <option value="Atendido">Atendido</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                    </div>
                  </div>
 
                  <h2 class="text-2xl font-semibold mb-6 text-gray-900">Chamados Registrados</h2>
@@ -187,6 +207,7 @@
         const emptyState = document.getElementById('empty-state');
         const submitButton = document.getElementById('submit-button');
         const searchInput = document.getElementById('search-input');
+        const filterStatus = document.getElementById('filter-status'); // Novo filtro
         
         document.getElementById('request-date').valueAsDate = new Date();
 
@@ -203,20 +224,12 @@
             }
         });
         
-        /**
-         * Busca e escuta por atualizações no nó de chamados em tempo real.
-         */
         function fetchServiceCalls() {
             const callsRef = ref(db, 'service_calls');
-            
             onValue(callsRef, (snapshot) => {
                 loadingState.style.display = 'none';
-                if (snapshot.exists()) {
-                    allCallsData = snapshot.val(); // Armazena os dados brutos
-                } else {
-                    allCallsData = {}; // Limpa os dados se o nó estiver vazio
-                }
-                renderFilteredCalls(); // Renderiza a lista com base nos filtros atuais
+                allCallsData = snapshot.exists() ? snapshot.val() : {};
+                renderFilteredCalls();
             }, (error) => {
                  console.error("Erro ao buscar chamados:", error);
                  loadingState.innerHTML = '<p class="text-red-500">Erro ao carregar dados.</p>';
@@ -229,8 +242,7 @@
         
         async function saveServiceCall(callData) {
             try {
-                const callsRef = ref(db, 'service_calls');
-                await push(callsRef, callData);
+                await push(ref(db, 'service_calls'), callData);
                 console.log("Chamado salvo com sucesso.");
                 return true;
             } catch (error) {
@@ -244,52 +256,62 @@
         // 5. FUNÇÕES PARA MANIPULAR A INTERFACE (UI)
         // =================================================================================
         
-        /**
-         * Filtra os dados de `allCallsData` e chama a função para renderizar a lista.
-         */
         function renderFilteredCalls() {
             const searchTerm = searchInput.value.toLowerCase();
-            
-            if (Object.keys(allCallsData).length === 0) {
-                 displayCalls({});
-                 return;
+            const selectedStatus = filterStatus.value;
+
+            // Começa com todos os dados
+            let filteredCalls = { ...allCallsData };
+
+            // 1. Filtra por status primeiro
+            if (selectedStatus !== 'Todos') {
+                filteredCalls = Object.keys(filteredCalls).reduce((acc, key) => {
+                    const call = filteredCalls[key];
+                    if (call.serviceStatus === selectedStatus) {
+                        acc[key] = call;
+                    }
+                    return acc;
+                }, {});
             }
 
-            const filteredCalls = Object.keys(allCallsData).reduce((acc, key) => {
-                const call = allCallsData[key];
-                const clientName = (call.clientName || '').toLowerCase();
-                const serialNumber = (call.serialNumber || '').toLowerCase();
-
-                if (clientName.includes(searchTerm) || serialNumber.includes(searchTerm)) {
-                    acc[key] = call;
-                }
-                return acc;
-            }, {});
+            // 2. Filtra por termo de busca no resultado do filtro de status
+            if (searchTerm) {
+                 filteredCalls = Object.keys(filteredCalls).reduce((acc, key) => {
+                    const call = filteredCalls[key];
+                    const clientName = (call.clientName || '').toLowerCase();
+                    const serialNumber = (call.serialNumber || '').toLowerCase();
+                    if (clientName.includes(searchTerm) || serialNumber.includes(searchTerm)) {
+                        acc[key] = call;
+                    }
+                    return acc;
+                }, {});
+            }
 
             displayCalls(filteredCalls);
         }
 
-        /**
-         * Renderiza a lista de chamados na tela a partir de um objeto de dados.
-         * @param {object} callsObject - Um objeto contendo os chamados a serem exibidos.
-         */
         function displayCalls(callsObject) {
             callsList.innerHTML = ''; 
 
             if (Object.keys(callsObject).length === 0) {
                 const searchTerm = searchInput.value;
-                if (searchTerm) {
-                    emptyState.innerHTML = `<p class="text-gray-500">Nenhum resultado encontrado para "<strong>${searchTerm}</strong>".</p>`;
-                } else {
-                    emptyState.innerHTML = `<p class="text-gray-500">Nenhum chamado registrado ainda.</p>`;
-                }
+                emptyState.innerHTML = (searchTerm || filterStatus.value !== 'Todos')
+                    ? `<p class="text-gray-500">Nenhum resultado encontrado para os filtros aplicados.</p>`
+                    : `<p class="text-gray-500">Nenhum chamado registrado ainda.</p>`;
                 emptyState.style.display = 'block';
                 return;
             }
 
             emptyState.style.display = 'none';
+            
+            // Mapeamento de status para cores
+            const statusColors = {
+                'Aberto': 'bg-yellow-100 text-yellow-800',
+                'Agendado': 'bg-blue-100 text-blue-800',
+                'Atendido': 'bg-green-100 text-green-800',
+                'Cancelado': 'bg-red-100 text-red-800'
+            };
 
-            // Itera sobre as chaves do objeto (que são os IDs únicos de cada chamado)
             for (const callId in callsObject) {
                 const call = callsObject[callId];
                 
@@ -308,11 +330,15 @@
                 card.className = 'card p-5 space-y-3 flex flex-col';
                 card.setAttribute('data-id', callId);
 
+                // Define a classe da cor do status
+                const statusColorClass = statusColors[call.serviceStatus] || 'bg-gray-100 text-gray-800';
+
                 card.innerHTML = `
                     <div class="flex-grow">
                         <div class="flex justify-between items-start mb-3">
                             <h3 class="font-bold text-lg text-blue-800">${call.clientName || 'Cliente não informado'}</h3>
-                            <span class="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-1 rounded">${call.serviceType}</span>
+                            <!-- BADGE DE STATUS COM COR -->
+                            <span class="text-xs font-medium px-2.5 py-1 rounded-full ${statusColorClass}">${call.serviceStatus || 'N/A'}</span>
                         </div>
                         <div class="border-t pt-3 space-y-2 text-sm">
                             <p><strong class="font-medium text-gray-600">Telefone:</strong> ${call.clientPhone || 'N/A'}</p>
@@ -320,10 +346,9 @@
                         </div>
                         <div class="border-t pt-3 mt-3 space-y-2 text-sm">
                             <p><strong class="font-medium text-gray-600">S/N:</strong> ${call.serialNumber}</p>
-                            <p><strong class="font-medium text-gray-600">Loja:</strong> ${call.store} | <strong class="font-medium text-gray-600">Data Compra:</strong> ${formatDate(call.purchaseDate)}</p>
+                             <p><strong class="font-medium text-gray-600">Tipo:</strong> ${call.serviceType || 'N/A'}</p>
                             <p><strong class="font-medium text-gray-600">Solicitação:</strong> ${formatDate(call.requestDate)}</p>
                             <p><strong class="font-medium text-gray-600">Agendamento:</strong> ${formatDate(call.scheduleDate)}</p>
-                            <p><strong class="font-medium text-gray-600">Execução:</strong> ${formatDate(call.executionDate)}</p>
                         </div>
                     </div>
                     <div class="border-t pt-3 mt-3 flex justify-between text-sm">
@@ -364,6 +389,7 @@
                 scheduleDate: document.getElementById('schedule-date').value,
                 executionDate: document.getElementById('execution-date').value,
                 serviceType: document.getElementById('service-type').value,
+                serviceStatus: document.getElementById('service-status').value, // Salva o status
                 customerValue: document.getElementById('customer-value').value,
                 providerValue: document.getElementById('provider-value').value,
                 createdAt: new Date().toISOString()
@@ -381,10 +407,10 @@
             submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
         });
 
-        // Adiciona o listener para a barra de busca
+        // Adiciona os listeners para os filtros
         searchInput.addEventListener('input', renderFilteredCalls);
+        filterStatus.addEventListener('change', renderFilteredCalls);
 
     </script>
 </body>
 </html>
-
