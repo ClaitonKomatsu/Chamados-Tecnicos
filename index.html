@@ -6,7 +6,7 @@
     <title>Controle de Chamados Técnicos (Realtime DB)</title>
     <!-- Incluindo Tailwind CSS para um design moderno e responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Importando ícones (Heroicons) -->
+    <!-- Importando ícones (Font Awesome) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Importando o ícone da aplicação -->
     <link rel="icon" href="https://placehold.co/32x32/1e40af/ffffff?text=C" type="image/png">
@@ -84,6 +84,11 @@
                                     <option value="Cancelado">Cancelado</option>
                                 </select>
                             </div>
+                            <!-- NOVO CAMPO MODELO -->
+                            <div>
+                                <label for="lock-model" class="block text-sm font-medium text-gray-700">Modelo da Fechadura</label>
+                                <input type="text" id="lock-model" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
                             <div>
                                 <label for="serial-number" class="block text-sm font-medium text-gray-700">Serial Number (SN)</label>
                                 <input type="text" id="serial-number" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -92,7 +97,11 @@
                                 <label for="request-date" class="block text-sm font-medium text-gray-700">Data da Solicitação</label>
                                 <input type="date" id="request-date" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
-                            <!-- CAMPO DE OBSERVAÇÃO PRÉ-ATENDIMENTO -->
+                             <!-- CAMPO DE DATA DE AGENDAMENTO REINSERIDO -->
+                            <div>
+                                <label for="schedule-date" class="block text-sm font-medium text-gray-700">Data do Agendamento</label>
+                                <input type="date" id="schedule-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
                             <div>
                                 <label for="obs-pre" class="block text-sm font-medium text-gray-700">Observações (Pré-atendimento)</label>
                                 <textarea id="obs-pre" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
@@ -101,7 +110,6 @@
                                 <label for="execution-date" class="block text-sm font-medium text-gray-700">Data da Execução</label>
                                 <input type="date" id="execution-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
-                             <!-- CAMPO DE OBSERVAÇÃO PÓS-ATENDIMENTO -->
                             <div>
                                 <label for="obs-post" class="block text-sm font-medium text-gray-700">Observações (Pós-atendimento)</label>
                                 <textarea id="obs-post" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
@@ -233,11 +241,13 @@
                 clientName: document.getElementById('client-name').value,
                 clientPhone: document.getElementById('client-phone').value,
                 clientAddress: document.getElementById('client-address').value,
+                lockModel: document.getElementById('lock-model').value, // Salva modelo
                 serialNumber: document.getElementById('serial-number').value,
                 requestDate: document.getElementById('request-date').value,
-                obsPre: document.getElementById('obs-pre').value, // Salva obs pré
+                scheduleDate: document.getElementById('schedule-date').value, // Salva agendamento
+                obsPre: document.getElementById('obs-pre').value,
                 executionDate: document.getElementById('execution-date').value,
-                obsPost: document.getElementById('obs-post').value, // Salva obs pós
+                obsPost: document.getElementById('obs-post').value,
                 serviceType: document.getElementById('service-type').value,
                 serviceStatus: document.getElementById('service-status').value,
                 customerValue: document.getElementById('customer-value').value,
@@ -250,8 +260,7 @@
 
             try {
                 if (callId) { // MODO EDIÇÃO
-                    const callRef = ref(db, `service_calls/${callId}`);
-                    await update(callRef, callData);
+                    await update(ref(db, `service_calls/${callId}`), callData);
                 } else { // MODO CRIAÇÃO
                     await push(ref(db, 'service_calls'), callData);
                 }
@@ -288,8 +297,10 @@
             document.getElementById('client-phone').value = call.clientPhone || '';
             document.getElementById('client-address').value = call.clientAddress || '';
             document.getElementById('service-status').value = call.serviceStatus || 'Aberto';
+            document.getElementById('lock-model').value = call.lockModel || ''; // Carrega modelo
             document.getElementById('serial-number').value = call.serialNumber || '';
             document.getElementById('request-date').value = call.requestDate || '';
+            document.getElementById('schedule-date').value = call.scheduleDate || ''; // Carrega agendamento
             document.getElementById('obs-pre').value = call.obsPre || '';
             document.getElementById('execution-date').value = call.executionDate || '';
             document.getElementById('obs-post').value = call.obsPost || '';
@@ -342,6 +353,12 @@
                 'Aberto': 'bg-yellow-100 text-yellow-800', 'Agendado': 'bg-blue-100 text-blue-800',
                 'Atendido': 'bg-green-100 text-green-800', 'Cancelado': 'bg-red-100 text-red-800'
             };
+            
+            const formatDate = (dateString) => {
+                    if (!dateString) return 'N/A';
+                    const [year, month, day] = dateString.split('-');
+                    return `${day}/${month}/${year}`;
+            };
 
             for (const callId in callsObject) {
                 const call = callsObject[callId];
@@ -351,7 +368,6 @@
 
                 const statusColorClass = statusColors[call.serviceStatus] || 'bg-gray-100 text-gray-800';
                 
-                // Função para formatar observações
                 const formatObs = (text) => text ? `<p class="text-gray-600 italic">"${text}"</p>` : '<p class="text-gray-400 italic">N/A</p>';
 
                 card.innerHTML = `
@@ -365,13 +381,15 @@
                             <p><strong class="font-medium text-gray-600">Endereço:</strong> ${call.clientAddress || 'N/A'}</p>
                         </div>
                         <div class="border-t pt-3 mt-3 space-y-2 text-sm">
+                            <p><strong class="font-medium text-gray-600">Modelo:</strong> ${call.lockModel || 'N/A'}</p>
                             <p><strong class="font-medium text-gray-600">S/N:</strong> ${call.serialNumber || 'N/A'}</p>
-                            <p><strong class="font-medium text-gray-600">Solicitação:</strong> ${call.requestDate || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Solicitação:</strong> ${formatDate(call.requestDate)}</p>
+                            <p><strong class="font-medium text-gray-600">Agendamento:</strong> ${formatDate(call.scheduleDate)}</p>
                             <div class="pl-2 border-l-2">
                                 <strong class="font-medium text-gray-600 text-xs">OBS (Pré):</strong>
                                 ${formatObs(call.obsPre)}
                             </div>
-                            <p><strong class="font-medium text-gray-600">Execução:</strong> ${call.executionDate || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Execução:</strong> ${formatDate(call.executionDate)}</p>
                             <div class="pl-2 border-l-2">
                                 <strong class="font-medium text-gray-600 text-xs">OBS (Pós):</strong>
                                 ${formatObs(call.obsPost)}
@@ -379,8 +397,15 @@
                         </div>
                     </div>
                     <div class="border-t pt-3 mt-3 flex justify-between items-center text-sm">
-                         <div class="text-green-700">
-                            <strong>${(parseFloat(call.customerValue) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+                        <div class="flex space-x-4">
+                            <div class="text-green-700">
+                                <span class="font-medium block text-xs text-gray-500">Cliente Paga</span>
+                                <strong>${(parseFloat(call.customerValue) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+                            </div>
+                            <div class="text-red-700">
+                                <span class="font-medium block text-xs text-gray-500">Prestador Recebe</span>
+                                <strong>${(parseFloat(call.providerValue) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+                            </div>
                         </div>
                         <div class="flex space-x-3">
                             <button title="Editar" class="edit-btn text-gray-500 hover:text-blue-600" data-id="${callId}"><i class="fas fa-pencil-alt"></i></button>
@@ -400,7 +425,6 @@
         searchInput.addEventListener('input', renderFilteredCalls);
         filterStatus.addEventListener('change', renderFilteredCalls);
 
-        // Delegação de eventos para botões de editar/excluir
         callsList.addEventListener('click', (e) => {
             const editButton = e.target.closest('.edit-btn');
             const deleteButton = e.target.closest('.delete-btn');
