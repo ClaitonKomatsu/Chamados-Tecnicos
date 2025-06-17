@@ -45,15 +45,20 @@
     <!-- Container Principal -->
     <div class="container mx-auto p-4 md:p-8 max-w-7xl">
         <header class="mb-8 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Painel de Controle de Chamados</h1>
-            <p class="text-gray-600 mt-2">Gerenciamento de suporte e instalação de fechaduras digitais.</p>
+             <!-- LOGOTIPO -->
+            <div class="mb-6">
+                <h1 class="text-5xl font-bold text-gray-800" style="font-family: 'Arial Black', sans-serif;">Homex<span class="text-2xl align-super">®</span></h1>
+                <p class="text-sm tracking-widest text-gray-600">DISTRIBUIDORA</p>
+            </div>
+             <!-- TÍTULO PRINCIPAL ALTERADO -->
+            <h1 class="text-3xl md:text-4xl font-bold text-red-600 uppercase">CONTROLE DE CHAMADOS</h1>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Seção do Formulário (Coluna 1) -->
             <div class="lg:col-span-1">
                 <div id="form-container" class="form-section sticky top-8">
-                    <h2 id="form-title" class="text-2xl font-semibold mb-6 border-b pb-4">Registrar Novo Atendimento</h2>
+                    <h2 id="form-title" class="text-2xl font-semibold mb-6 border-b pb-4">Registrar Chamado</h2>
                     <form id="service-call-form" class="space-y-4">
                         <input type="hidden" id="edit-call-id">
 
@@ -428,7 +433,7 @@
             form.reset();
             document.getElementById('edit-call-id').value = '';
             setNextCallNumber();
-            formTitle.textContent = 'Registrar Novo Atendimento';
+            formTitle.textContent = 'Registrar Chamado';
             submitButton.textContent = 'Salvar Chamado';
             cancelEditButton.style.display = 'none';
         }
