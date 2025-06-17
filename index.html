@@ -354,13 +354,23 @@
         }
 
         async function deleteServiceCall(callId) {
-            if (confirm('Tem certeza que deseja excluir este chamado? Esta ação não pode ser desfeita.')) {
-                try {
-                    await remove(ref(db, `service_calls/${callId}`));
-                } catch (error) {
-                    console.error("Delete Error:", error);
-                    alert("Erro ao excluir o chamado.");
+            const password = prompt("Para excluir, digite a senha de autorização:");
+            if (password === null) {
+                return; // Usuário cancelou
+            }
+
+            if (password === "Homex") {
+                if (confirm('Tem certeza que deseja excluir este chamado? Esta ação não pode ser desfeita.')) {
+                    try {
+                        await remove(ref(db, `service_calls/${callId}`));
+                        console.log("Chamado excluído com sucesso.");
+                    } catch (error) {
+                        console.error("Delete Error:", error);
+                        alert("Erro ao excluir o chamado.");
+                    }
                 }
+            } else {
+                alert("Senha incorreta. A exclusão foi cancelada.");
             }
         }
         
