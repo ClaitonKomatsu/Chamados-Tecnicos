@@ -81,6 +81,16 @@
                         <div class="space-y-4 form-fieldset">
                             <h3 class="text-lg font-medium text-gray-800">Dados do Produto e Serviço</h3>
                              <div>
+                                <label for="service-type" class="block text-sm font-medium text-gray-700">Tipo de Atendimento</label>
+                                <select id="service-type" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="Instalação">Instalação</option>
+                                    <option value="Garantia">Garantia</option>
+                                    <option value="Suporte">Suporte</option>
+                                    <option value="Avulso">Avulso</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                             <div>
                                 <label for="service-status" class="block text-sm font-medium text-gray-700">Status do Chamado</label>
                                 <select id="service-status" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="Aberto">Aberto</option>
@@ -141,16 +151,6 @@
                             <div>
                                 <label for="obs-post" class="block text-sm font-medium text-gray-700">Observações (Pós-atendimento)</label>
                                 <textarea id="obs-post" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
-                            </div>
-                             <div>
-                                <label for="service-type" class="block text-sm font-medium text-gray-700">Tipo de Atendimento</label>
-                                <select id="service-type" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="Instalação">Instalação</option>
-                                    <option value="Garantia">Garantia</option>
-                                    <option value="Suporte">Suporte</option>
-                                    <option value="Avulso">Avulso</option>
-                                    <option value="Outros">Outros</option>
-                                </select>
                             </div>
                             <div>
                                 <label for="customer-value" class="block text-sm font-medium text-gray-700">Valor a Pagar (Cliente)</label>
@@ -402,6 +402,7 @@
             document.getElementById('client-name').value = call.clientName || '';
             document.getElementById('client-phone').value = call.clientPhone || '';
             document.getElementById('client-address').value = call.clientAddress || '';
+            document.getElementById('service-type').value = call.serviceType || 'Instalação';
             document.getElementById('service-status').value = call.serviceStatus || 'Aberto';
             document.getElementById('technician-name').value = call.technicianName || '';
             document.getElementById('lock-model').value = call.lockModel || 'Alpha';
@@ -413,7 +414,6 @@
             document.getElementById('obs-pre').value = call.obsPre || '';
             document.getElementById('execution-date').value = call.executionDate || '';
             document.getElementById('obs-post').value = call.obsPost || '';
-            document.getElementById('service-type').value = call.serviceType || 'Instalação';
             document.getElementById('customer-value').value = call.customerValue || '';
             document.getElementById('provider-value').value = call.providerValue || '';
             document.getElementById('settlement-date').value = call.settlementDate || '';
