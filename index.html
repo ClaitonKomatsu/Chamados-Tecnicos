@@ -44,6 +44,10 @@
 
     <!-- Container Principal -->
     <div class="container mx-auto p-4 md:p-8 max-w-7xl relative">
+        <!-- BOTÃO DE ATIVAÇÃO -->
+        <button id="activation-button" class="absolute top-4 left-4 md:top-8 md:left-8 bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors">
+            ATIVAÇÃO
+        </button>
         <!-- BOTÃO DE SUPORTE -->
         <a href="https://homexbr.notion.site/Homex-Suporte-Tecnico-6e271639fd524a40ba189348aeabacbe" target="_blank" rel="noopener noreferrer" class="absolute top-4 right-4 md:top-8 md:right-8 bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors">
             SUPORTE
@@ -294,6 +298,7 @@
         const callNumberInput = document.getElementById('call-number');
         const clientPhoneInput = document.getElementById('client-phone');
         const exportCsvButton = document.getElementById('export-csv-button');
+        const activationButton = document.getElementById('activation-button');
         
         // =================================================================================
         // 3. AUTENTICAÇÃO E BUSCA DE DADOS
@@ -619,6 +624,15 @@
             document.body.removeChild(link);
         }
 
+        function handleActivationClick() {
+            const password = prompt("Para acessar, digite a senha de autorização:");
+            if (password === "Philips") {
+                window.open('https://claitonkomatsu.github.io/Ativacao/', '_blank');
+            } else if (password !== null) {
+                alert("Senha incorreta.");
+            }
+        }
+
         // =================================================================================
         // 6. EVENT LISTENERS
         // =================================================================================
@@ -629,6 +643,7 @@
         settlementDateStart.addEventListener('change', renderFilteredCalls);
         settlementDateEnd.addEventListener('change', renderFilteredCalls);
         exportCsvButton.addEventListener('click', exportToCSV);
+        activationButton.addEventListener('click', handleActivationClick);
 
         callsList.addEventListener('click', (e) => {
             const editButton = e.target.closest('.edit-btn');
