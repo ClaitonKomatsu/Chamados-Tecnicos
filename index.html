@@ -114,6 +114,10 @@
                                 </select>
                             </div>
                             <div>
+                                <label for="attendant-name" class="block text-sm font-medium text-gray-700">Nome do Atendente</label>
+                                <input type="text" id="attendant-name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
                                 <label for="technician-name" class="block text-sm font-medium text-gray-700">Nome do Técnico</label>
                                 <input type="text" id="technician-name" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
@@ -332,6 +336,7 @@
                 clientName: document.getElementById('client-name').value,
                 clientPhone: document.getElementById('client-phone').value,
                 clientAddress: document.getElementById('client-address').value,
+                attendantName: document.getElementById('attendant-name').value,
                 technicianName: document.getElementById('technician-name').value,
                 lockModel: document.getElementById('lock-model').value,
                 serialNumber: document.getElementById('serial-number').value,
@@ -419,6 +424,7 @@
             document.getElementById('client-address').value = call.clientAddress || '';
             document.getElementById('service-type').value = call.serviceType || 'Instalação';
             document.getElementById('service-status').value = call.serviceStatus || 'Aberto';
+            document.getElementById('attendant-name').value = call.attendantName || '';
             document.getElementById('technician-name').value = call.technicianName || '';
             document.getElementById('lock-model').value = call.lockModel || 'Alpha';
             document.getElementById('serial-number').value = call.serialNumber || '';
@@ -473,6 +479,7 @@
                     (call.callNumber || '').toString().toLowerCase().includes(searchTerm) ||
                     (call.clientName || '').toLowerCase().includes(searchTerm) ||
                     (call.serialNumber || '').toLowerCase().includes(searchTerm) ||
+                    (call.attendantName || '').toLowerCase().includes(searchTerm) ||
                     (call.technicianName || '').toLowerCase().includes(searchTerm)
                 );
             }
@@ -544,6 +551,7 @@
                         <div class="border-t pt-3 space-y-2 text-sm">
                             <p><strong class="font-medium text-gray-600">Telefone:</strong> ${call.clientPhone || 'N/A'}</p>
                             <p><strong class="font-medium text-gray-600">Endereço:</strong> ${call.clientAddress || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Atendente:</strong> ${call.attendantName || 'N/A'}</p>
                             <p><strong class="font-medium text-gray-600">Técnico:</strong> ${call.technicianName || 'N/A'}</p>
                         </div>
                         <div class="border-t pt-3 mt-3 space-y-2 text-sm">
@@ -594,7 +602,7 @@
             }
 
             const headers = [
-                "Nº Chamado", "Status", "Nome Cliente", "Telefone", "Endereço", "Técnico", "Modelo", "S/N", "Loja", "Data Compra",
+                "Nº Chamado", "Status", "Nome Cliente", "Telefone", "Endereço", "Atendente", "Técnico", "Modelo", "S/N", "Loja", "Data Compra",
                 "Data Solicitação", "Data Agendamento", "Data Execução", "Data Quitação", 
                 "OBS Pré", "OBS Pós", "Tipo Atendimento", "Valor Cliente (R$)", "Valor Prestador (R$)"
             ];
@@ -608,7 +616,7 @@
 
             const rows = calls.map(call => [
                 call.callNumber, call.serviceStatus, call.clientName, call.clientPhone, call.clientAddress,
-                call.technicianName, call.lockModel, call.serialNumber, call.store, call.purchaseDate,
+                call.attendantName, call.technicianName, call.lockModel, call.serialNumber, call.store, call.purchaseDate,
                 call.requestDate, call.scheduleDate, call.executionDate, call.settlementDate,
                 call.obsPre, call.obsPost, call.serviceType,
                 (parseFloat(call.customerValue) || 0).toFixed(2), (parseFloat(call.providerValue) || 0).toFixed(2)
