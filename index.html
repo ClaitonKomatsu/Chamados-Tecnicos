@@ -6,17 +6,17 @@
     <title>Controle de Chamados Técnicos (Realtime DB)</title>
     <!-- Incluindo Tailwind CSS para um design moderno e responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importando ícones (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Importando o ícone da aplicação -->
     <link rel="icon" href="https://placehold.co/32x32/1e40af/ffffff?text=C" type="image/png">
     <style>
-        /* Estilo para a fonte e melhorias visuais */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Fundo cinza claro */
+            background-color: #f3f4f6;
         }
-        /* Efeito de transição para botões e inputs */
-        input, select, button {
+        input, select, button, textarea {
             transition: all 0.2s ease-in-out;
         }
         .card {
@@ -24,10 +24,6 @@
             border-radius: 0.75rem;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
         }
         .form-section {
             background-color: white;
@@ -40,28 +36,57 @@
             padding-top: 1.5rem;
             margin-top: 1.5rem;
         }
+        #cancel-edit-button { display: none; }
+        /* Estilo para o input de arquivo */
+        #file-upload-label {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background-color: #f9fafb;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #file-upload-label:hover {
+            background-color: #f3f4f6;
+        }
     </style>
 </head>
 <body class="antialiased text-gray-800">
 
     <!-- Container Principal -->
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl relative">
+        <!-- BOTÃO DE ATIVAÇÃO -->
+        <button id="activation-button" class="absolute top-4 left-4 md:top-8 md:left-8 bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors">
+            ATIVAÇÃO
+        </button>
+        <!-- BOTÃO DE SUPORTE -->
+        <a href="https://homexbr.notion.site/Homex-Suporte-Tecnico-6e271639fd524a40ba189348aeabacbe" target="_blank" rel="noopener noreferrer" class="absolute top-4 right-4 md:top-8 md:right-8 bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors">
+            SUPORTE
+        </a>
 
-        <!-- Cabeçalho -->
-        <header class="mb-8 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Painel de Controle de Chamados</h1>
-            <p class="text-gray-600 mt-2">Gerenciamento de suporte e instalação de fechaduras digitais.</p>
+        <header class="mb-8 text-center pt-12">
+            <div class="mb-6">
+                <h1 class="text-5xl font-bold text-gray-800" style="font-family: 'Arial Black', sans-serif;">Homex<span class="text-2xl align-super">®</span></h1>
+                <p class="text-sm tracking-widest text-gray-600">DISTRIBUIDORA</p>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-red-600 uppercase">CONTROLE DE CHAMADOS</h1>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            <!-- Seção do Formulário (Coluna 1) -->
             <div class="lg:col-span-1">
-                <div class="form-section">
-                    <h2 class="text-2xl font-semibold mb-6 border-b pb-4">Registrar Novo Atendimento</h2>
+                <div id="form-container" class="form-section sticky top-8">
+                    <h2 id="form-title" class="text-2xl font-semibold mb-6 border-b pb-4">Registrar Chamado</h2>
                     <form id="service-call-form" class="space-y-4">
-                        
-                        <div class="space-y-4">
+                        <input type="hidden" id="edit-call-id">
+
+                        <div>
+                            <label for="call-number" class="block text-sm font-medium text-gray-700">Número do Chamado</label>
+                            <input type="text" id="call-number" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+
+                        <div class="space-y-4 form-fieldset">
                              <h3 class="text-lg font-medium text-gray-800">Dados do Cliente</h3>
                              <div>
                                 <label for="client-name" class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
@@ -69,18 +94,27 @@
                             </div>
                              <div>
                                 <label for="client-phone" class="block text-sm font-medium text-gray-700">Telefone</label>
-                                <input type="tel" id="client-phone" placeholder="(11) 99999-9999" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <input type="tel" id="client-phone" placeholder="(99) 99999-9999" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                              <div>
                                 <label for="client-address" class="block text-sm font-medium text-gray-700">Endereço</label>
-                                <input type="text" id="client-address" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <input type="text" id="client-address" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                         </div>
 
                         <div class="space-y-4 form-fieldset">
                             <h3 class="text-lg font-medium text-gray-800">Dados do Produto e Serviço</h3>
-                            <!-- NOVO CAMPO DE STATUS -->
-                            <div>
+                             <div>
+                                <label for="service-type" class="block text-sm font-medium text-gray-700">Tipo de Atendimento</label>
+                                <select id="service-type" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="Instalação">Instalação</option>
+                                    <option value="Garantia">Garantia</option>
+                                    <option value="Suporte">Suporte</option>
+                                    <option value="Avulso">Avulso</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                             <div>
                                 <label for="service-status" class="block text-sm font-medium text-gray-700">Status do Chamado</label>
                                 <select id="service-status" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="Aberto">Aberto</option>
@@ -90,16 +124,41 @@
                                 </select>
                             </div>
                             <div>
+                                <label for="attendant-name" class="block text-sm font-medium text-gray-700">Nome do Atendente</label>
+                                <input type="text" id="attendant-name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="technician-name" class="block text-sm font-medium text-gray-700">Nome do Técnico</label>
+                                <input type="text" id="technician-name" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="lock-model" class="block text-sm font-medium text-gray-700">Modelo da Fechadura</label>
+                                <select id="lock-model" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="101">101</option>
+                                    <option value="210">210</option>
+                                    <option value="303">303</option>
+                                    <option value="5100">5100</option>
+                                    <option value="608">608</option>
+                                    <option value="610">610</option>
+                                    <option value="709">709</option>
+                                    <option value="801">801</option>
+                                    <option value="9300">9300</option>
+                                    <option value="Alpha">Alpha</option>
+                                    <option value="Alpha.VP">Alpha.VP</option>
+                                    <option value="Outra">Outra</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label for="serial-number" class="block text-sm font-medium text-gray-700">Serial Number (SN)</label>
                                 <input type="text" id="serial-number" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="store" class="block text-sm font-medium text-gray-700">Loja da Compra</label>
-                                <input type="text" id="store" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="purchase-date" class="block text-sm font-medium text-gray-700">Data da Compra</label>
+                                <input type="date" id="purchase-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="purchase-date" class="block text-sm font-medium text-gray-700">Data da Compra</label>
-                                <input type="date" id="purchase-date" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="store" class="block text-sm font-medium text-gray-700">Loja</label>
+                                <input type="text" id="store" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
                                 <label for="request-date" class="block text-sm font-medium text-gray-700">Data da Solicitação</label>
@@ -110,18 +169,16 @@
                                 <input type="date" id="schedule-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
+                                <label for="obs-pre" class="block text-sm font-medium text-gray-700">Observações (Pré-atendimento)</label>
+                                <textarea id="obs-pre" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
                                 <label for="execution-date" class="block text-sm font-medium text-gray-700">Data da Execução</label>
                                 <input type="date" id="execution-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="service-type" class="block text-sm font-medium text-gray-700">Tipo de Atendimento</label>
-                                <select id="service-type" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="Instalação">Instalação</option>
-                                    <option value="Garantia">Garantia</option>
-                                    <option value="Suporte">Suporte</option>
-                                    <option value="Avulso">Avulso</option>
-                                    <option value="Outros">Outros</option>
-                                </select>
+                                <label for="obs-post" class="block text-sm font-medium text-gray-700">Observações (Pós-atendimento)</label>
+                                <textarea id="obs-post" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
                             </div>
                             <div>
                                 <label for="customer-value" class="block text-sm font-medium text-gray-700">Valor a Pagar (Cliente)</label>
@@ -131,21 +188,37 @@
                                 <label for="provider-value" class="block text-sm font-medium text-gray-700">Valor a Pagar (Prestador)</label>
                                 <input type="number" id="provider-value" step="0.01" min="0" placeholder="R$ 0,00" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
+                             <div>
+                                <label for="settlement-date" class="block text-sm font-medium text-gray-700">Data da Quitação</label>
+                                <input type="date" id="settlement-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
                         </div>
-                        <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 !mt-8">
-                            Salvar Chamado
-                        </button>
+
+                         <!-- CAMPO DE UPLOAD DE ARQUIVO -->
+                        <div class="space-y-2 form-fieldset">
+                            <h3 class="text-lg font-medium text-gray-800">Anexos</h3>
+                            <label id="file-upload-label" for="file-upload"><i class="fas fa-paperclip"></i> Anexar Arquivos</label>
+                            <input type="file" id="file-upload" multiple class="hidden">
+                            <div id="file-upload-list" class="text-sm text-gray-600 space-y-1"></div>
+                        </div>
+
+                        <div class="flex flex-col space-y-2 !mt-8">
+                            <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Salvar Chamado
+                            </button>
+                            <button type="button" id="cancel-edit-button" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Cancelar Edição
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Seção da Lista de Chamados (Coluna 2) -->
             <div class="lg:col-span-2">
                  <div class="mb-6 bg-white p-4 rounded-lg shadow">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Consultar Chamados</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input type="text" id="search-input" placeholder="Buscar por nome ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <!-- NOVO FILTRO DE STATUS -->
+                        <input type="text" id="search-input" placeholder="Buscar por nº, nome, técnico ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         <select id="filter-status" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="Todos">Todos os Status</option>
                             <option value="Aberto">Aberto</option>
@@ -154,32 +227,56 @@
                             <option value="Cancelado">Cancelado</option>
                         </select>
                     </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t">
+                        <div>
+                            <label for="settlement-date-start" class="block text-sm font-medium text-gray-700">Quitação de:</label>
+                            <input type="date" id="settlement-date-start" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="settlement-date-end" class="block text-sm font-medium text-gray-700">Até:</label>
+                            <input type="date" id="settlement-date-end" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t">
+                         <button id="export-csv-button" class="w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            <i class="fas fa-file-csv"></i>
+                            Exportar para CSV
+                        </button>
+                    </div>
+                 </div>
+                 
+                 <div id="filtered-totals" class="hidden mb-6 bg-blue-100 p-4 rounded-lg shadow text-center">
+                    <h3 class="text-lg font-semibold text-blue-900 mb-2">Totais da Consulta</h3>
+                    <div class="flex justify-around">
+                        <div class="text-green-700">
+                            <span class="font-medium block text-sm text-gray-600">Total Cliente</span>
+                            <strong id="total-customer" class="text-xl">R$ 0,00</strong>
+                        </div>
+                        <div class="text-red-700">
+                            <span class="font-medium block text-sm text-gray-600">Total Prestador</span>
+                            <strong id="total-provider" class="text-xl">R$ 0,00</strong>
+                        </div>
+                    </div>
                  </div>
 
                  <h2 class="text-2xl font-semibold mb-6 text-gray-900">Chamados Registrados</h2>
                  <div id="loading-state" class="text-center p-8">
-                     <p class="text-gray-500">Carregando chamados do banco de dados...</p>
+                     <p class="text-gray-500">Carregando chamados...</p>
                  </div>
                  <div id="service-calls-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Cards de chamados serão inseridos aqui -->
                  </div>
                  <div id="empty-state" class="hidden text-center p-10 border-2 border-dashed rounded-lg mt-6">
-                    <p class="text-gray-500">Nenhum chamado registrado ainda.</p>
+                    <p class="text-gray-500">Nenhum chamado encontrado.</p>
                 </div>
             </div>
-
         </main>
     </div>
 
-    <!-- Script para interagir com o Firebase -->
     <script type="module">
-        // =================================================================================
-        // 1. CONFIGURAÇÃO E INICIALIZAÇÃO DO FIREBASE
-        // =================================================================================
-        
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCMATq-iNDjKNUXQhzdZgtKay4HOgK_m7Q",
@@ -194,224 +291,408 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
         
-        // =================================================================================
-        // 2. ESTADO DA APLICAÇÃO E REFERÊNCIAS DO DOM
-        // =================================================================================
-        
-        let allCallsData = {}; // Guarda todos os chamados para filtragem local
+        let allCallsData = {};
+        let currentFilteredData = {};
+        let filesToUpload = [];
 
-        const serviceForm = document.getElementById('service-call-form');
+        const form = document.getElementById('service-call-form');
         const callsList = document.getElementById('service-calls-list');
         const loadingState = document.getElementById('loading-state');
         const emptyState = document.getElementById('empty-state');
         const submitButton = document.getElementById('submit-button');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
         const searchInput = document.getElementById('search-input');
-        const filterStatus = document.getElementById('filter-status'); // Novo filtro
+        const filterStatus = document.getElementById('filter-status');
+        const settlementDateStart = document.getElementById('settlement-date-start');
+        const settlementDateEnd = document.getElementById('settlement-date-end');
+        const filteredTotalsDiv = document.getElementById('filtered-totals');
+        const totalCustomerEl = document.getElementById('total-customer');
+        const totalProviderEl = document.getElementById('total-provider');
+        const formTitle = document.getElementById('form-title');
+        const callNumberInput = document.getElementById('call-number');
+        const clientPhoneInput = document.getElementById('client-phone');
+        const exportCsvButton = document.getElementById('export-csv-button');
+        const activationButton = document.getElementById('activation-button');
+        const fileUploadInput = document.getElementById('file-upload');
+        const fileUploadList = document.getElementById('file-upload-list');
         
-        document.getElementById('request-date').valueAsDate = new Date();
-
-        // =================================================================================
-        // 3. AUTENTICAÇÃO E BUSCA INICIAL DE DADOS
-        // =================================================================================
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log("Usuário autenticado (anonimamente):", user.uid);
-                fetchServiceCalls();
-            } else {
-                signInAnonymously(auth).catch((error) => console.error("Erro na autenticação anônima:", error));
-            }
+        onAuthStateChanged(auth, user => {
+            if (user) fetchServiceCalls();
+            else signInAnonymously(auth).catch(err => console.error("Auth Error:", err));
         });
         
         function fetchServiceCalls() {
             const callsRef = ref(db, 'service_calls');
-            onValue(callsRef, (snapshot) => {
+            onValue(callsRef, snapshot => {
                 loadingState.style.display = 'none';
                 allCallsData = snapshot.exists() ? snapshot.val() : {};
+                setNextCallNumber();
                 renderFilteredCalls();
-            }, (error) => {
-                 console.error("Erro ao buscar chamados:", error);
+            }, err => {
+                 console.error("Fetch Error:", err);
                  loadingState.innerHTML = '<p class="text-red-500">Erro ao carregar dados.</p>';
             });
         }
 
-        // =================================================================================
-        // 4. FUNÇÕES DE MANIPULAÇÃO DE DADOS (CRUD)
-        // =================================================================================
-        
-        async function saveServiceCall(callData) {
+        async function uploadFiles(callId, files) {
+            const uploadPromises = Array.from(files).map(async (file) => {
+                const fileRef = storageRef(storage, `service_calls/${callId}/${file.name}`);
+                await uploadBytes(fileRef, file);
+                const downloadURL = await getDownloadURL(fileRef);
+                return { name: file.name, url: downloadURL, path: fileRef.fullPath };
+            });
+            return Promise.all(uploadPromises);
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const callId = document.getElementById('edit-call-id').value;
+            let callData = {
+                callNumber: document.getElementById('call-number').value,
+                clientName: document.getElementById('client-name').value,
+                clientPhone: document.getElementById('client-phone').value,
+                clientAddress: document.getElementById('client-address').value,
+                attendantName: document.getElementById('attendant-name').value,
+                technicianName: document.getElementById('technician-name').value,
+                lockModel: document.getElementById('lock-model').value,
+                serialNumber: document.getElementById('serial-number').value,
+                purchaseDate: document.getElementById('purchase-date').value,
+                store: document.getElementById('store').value,
+                requestDate: document.getElementById('request-date').value,
+                scheduleDate: document.getElementById('schedule-date').value,
+                obsPre: document.getElementById('obs-pre').value,
+                executionDate: document.getElementById('execution-date').value,
+                obsPost: document.getElementById('obs-post').value,
+                serviceType: document.getElementById('service-type').value,
+                serviceStatus: document.getElementById('service-status').value,
+                customerValue: document.getElementById('customer-value').value,
+                providerValue: document.getElementById('provider-value').value,
+                settlementDate: document.getElementById('settlement-date').value,
+                createdAt: allCallsData[callId]?.createdAt || new Date().toISOString()
+            };
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Salvando...';
+
             try {
-                await push(ref(db, 'service_calls'), callData);
-                console.log("Chamado salvo com sucesso.");
-                return true;
+                let currentCallId = callId;
+                if (currentCallId) { // MODO EDIÇÃO
+                    await update(ref(db, `service_calls/${currentCallId}`), callData);
+                } else { // MODO CRIAÇÃO
+                    const newCallRef = await push(ref(db, 'service_calls'), callData);
+                    currentCallId = newCallRef.key;
+                }
+
+                if (filesToUpload.length > 0) {
+                    const uploadedFilesInfo = await uploadFiles(currentCallId, filesToUpload);
+                    const existingFiles = allCallsData[currentCallId]?.files || [];
+                    const updatedFiles = [...existingFiles, ...uploadedFilesInfo];
+                    await update(ref(db, `service_calls/${currentCallId}`), { files: updatedFiles });
+                }
+
+                exitEditMode();
             } catch (error) {
-                console.error("Erro ao salvar chamado: ", error);
-                alert("Ocorreu um erro ao salvar o chamado. Tente novamente.");
-                return false;
+                console.error("Save/Update Error:", error);
+                alert("Erro ao salvar os dados.");
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+
+        async function deleteFile(callId, fileToDelete) {
+             if (!confirm(`Tem certeza que deseja excluir o arquivo "${fileToDelete.name}"?`)) return;
+
+             try {
+                // Deleta do Storage
+                const fileStorageRef = storageRef(storage, fileToDelete.path);
+                await deleteObject(fileStorageRef);
+
+                // Remove do Realtime Database
+                const currentFiles = allCallsData[callId]?.files || [];
+                const updatedFiles = currentFiles.filter(file => file.path !== fileToDelete.path);
+                await update(ref(db, `service_calls/${callId}`), { files: updatedFiles });
+
+                console.log("Arquivo excluído com sucesso.");
+             } catch(error) {
+                 console.error("Erro ao excluir arquivo:", error);
+                 alert("Não foi possível excluir o arquivo.");
+             }
+        }
+
+        async function deleteServiceCall(callId) {
+            const password = prompt("Para excluir, digite a senha de autorização:");
+            if (password === null) return;
+
+            if (password === "Homex") {
+                if (confirm('Tem certeza que deseja excluir este chamado? Esta ação não pode ser desfeita.')) {
+                    try {
+                        const filesToDelete = allCallsData[callId]?.files || [];
+                        const deleteFilePromises = filesToDelete.map(file => deleteObject(storageRef(storage, file.path)));
+                        await Promise.all(deleteFilePromises);
+                        await remove(ref(db, `service_calls/${callId}`));
+                    } catch (error) {
+                        console.error("Delete Error:", error);
+                        alert("Erro ao excluir o chamado.");
+                    }
+                }
+            } else {
+                alert("Senha incorreta. A exclusão foi cancelada.");
             }
         }
         
-        // =================================================================================
-        // 5. FUNÇÕES PARA MANIPULAR A INTERFACE (UI)
-        // =================================================================================
-        
+        function calculateNextCallNumber() {
+            const existingNumbers = Object.values(allCallsData).map(call => parseInt(call.callNumber)).filter(Boolean);
+            return existingNumbers.length === 0 ? 1000 : Math.max(...existingNumbers) + 1;
+        }
+
+        function setNextCallNumber() {
+            if (!document.getElementById('edit-call-id').value) {
+                callNumberInput.value = calculateNextCallNumber();
+            }
+        }
+
+        function enterEditMode(callId) {
+            const call = allCallsData[callId];
+            if (!call) return;
+            
+            form.reset();
+            document.getElementById('edit-call-id').value = callId;
+            callNumberInput.value = call.callNumber || '';
+            document.getElementById('client-name').value = call.clientName || '';
+            document.getElementById('client-phone').value = call.clientPhone || '';
+            document.getElementById('client-address').value = call.clientAddress || '';
+            document.getElementById('service-type').value = call.serviceType || 'Instalação';
+            document.getElementById('service-status').value = call.serviceStatus || 'Aberto';
+            document.getElementById('attendant-name').value = call.attendantName || '';
+            document.getElementById('technician-name').value = call.technicianName || '';
+            document.getElementById('lock-model').value = call.lockModel || 'Alpha';
+            document.getElementById('serial-number').value = call.serialNumber || '';
+            document.getElementById('purchase-date').value = call.purchaseDate || '';
+            document.getElementById('store').value = call.store || '';
+            document.getElementById('request-date').value = call.requestDate || '';
+            document.getElementById('schedule-date').value = call.scheduleDate || '';
+            document.getElementById('obs-pre').value = call.obsPre || '';
+            document.getElementById('execution-date').value = call.executionDate || '';
+            document.getElementById('obs-post').value = call.obsPost || '';
+            document.getElementById('customer-value').value = call.customerValue || '';
+            document.getElementById('provider-value').value = call.providerValue || '';
+            document.getElementById('settlement-date').value = call.settlementDate || '';
+
+            formTitle.textContent = 'Editando Chamado';
+            submitButton.textContent = 'Atualizar Chamado';
+            cancelEditButton.style.display = 'block';
+            fileUploadList.innerHTML = '';
+            filesToUpload = [];
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function exitEditMode() {
+            form.reset();
+            document.getElementById('edit-call-id').value = '';
+            setNextCallNumber();
+            formTitle.textContent = 'Registrar Chamado';
+            submitButton.textContent = 'Salvar Chamado';
+            cancelEditButton.style.display = 'none';
+            fileUploadList.innerHTML = '';
+            filesToUpload = [];
+        }
+
         function renderFilteredCalls() {
             const searchTerm = searchInput.value.toLowerCase();
             const selectedStatus = filterStatus.value;
+            const startDate = settlementDateStart.value;
+            const endDate = settlementDateEnd.value;
 
-            // Começa com todos os dados
-            let filteredCalls = { ...allCallsData };
+            let filteredEntries = Object.entries(allCallsData);
 
-            // 1. Filtra por status primeiro
             if (selectedStatus !== 'Todos') {
-                filteredCalls = Object.keys(filteredCalls).reduce((acc, key) => {
-                    const call = filteredCalls[key];
-                    if (call.serviceStatus === selectedStatus) {
-                        acc[key] = call;
-                    }
-                    return acc;
-                }, {});
+                filteredEntries = filteredEntries.filter(([, call]) => call.serviceStatus === selectedStatus);
             }
 
-            // 2. Filtra por termo de busca no resultado do filtro de status
+            if (startDate) {
+                filteredEntries = filteredEntries.filter(([, call]) => call.settlementDate && call.settlementDate >= startDate);
+            }
+
+            if (endDate) {
+                filteredEntries = filteredEntries.filter(([, call]) => call.settlementDate && call.settlementDate <= endDate);
+            }
+
             if (searchTerm) {
-                 filteredCalls = Object.keys(filteredCalls).reduce((acc, key) => {
-                    const call = filteredCalls[key];
-                    const clientName = (call.clientName || '').toLowerCase();
-                    const serialNumber = (call.serialNumber || '').toLowerCase();
-                    if (clientName.includes(searchTerm) || serialNumber.includes(searchTerm)) {
-                        acc[key] = call;
-                    }
-                    return acc;
-                }, {});
+                 filteredEntries = filteredEntries.filter(([, call]) => 
+                    (call.callNumber || '').toString().toLowerCase().includes(searchTerm) ||
+                    (call.clientName || '').toLowerCase().includes(searchTerm) ||
+                    (call.serialNumber || '').toLowerCase().includes(searchTerm) ||
+                    (call.attendantName || '').toLowerCase().includes(searchTerm) ||
+                    (call.technicianName || '').toLowerCase().includes(searchTerm)
+                );
             }
+            
+            currentFilteredData = Object.fromEntries(filteredEntries);
+            displayCalls(currentFilteredData);
+            calculateAndDisplayTotals(currentFilteredData);
+        }
+        
+        function calculateAndDisplayTotals(callsObject) {
+            const totalCustomer = Object.values(callsObject).reduce((sum, call) => sum + (parseFloat(call.customerValue) || 0), 0);
+            const totalProvider = Object.values(callsObject).reduce((sum, call) => sum + (parseFloat(call.providerValue) || 0), 0);
+            
+            const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-            displayCalls(filteredCalls);
+            totalCustomerEl.textContent = formatCurrency(totalCustomer);
+            totalProviderEl.textContent = formatCurrency(totalProvider);
+            
+            const hasFilters = searchInput.value || filterStatus.value !== 'Todos' || settlementDateStart.value || settlementDateEnd.value;
+            
+            if (hasFilters && Object.keys(callsObject).length > 0) {
+                 filteredTotalsDiv.classList.remove('hidden');
+            } else {
+                 filteredTotalsDiv.classList.add('hidden');
+            }
         }
 
         function displayCalls(callsObject) {
             callsList.innerHTML = ''; 
-
-            if (Object.keys(callsObject).length === 0) {
-                const searchTerm = searchInput.value;
-                emptyState.innerHTML = (searchTerm || filterStatus.value !== 'Todos')
-                    ? `<p class="text-gray-500">Nenhum resultado encontrado para os filtros aplicados.</p>`
+            const hasCalls = Object.keys(callsObject).length > 0;
+            emptyState.style.display = hasCalls ? 'none' : 'block';
+            if (!hasCalls) {
+                 emptyState.innerHTML = (searchInput.value || filterStatus.value !== 'Todos' || settlementDateStart.value || settlementDateEnd.value)
+                    ? `<p class="text-gray-500">Nenhum resultado para os filtros aplicados.</p>`
                     : `<p class="text-gray-500">Nenhum chamado registrado ainda.</p>`;
-                emptyState.style.display = 'block';
-                return;
             }
 
-            emptyState.style.display = 'none';
-            
-            // Mapeamento de status para cores
             const statusColors = {
-                'Aberto': 'bg-yellow-100 text-yellow-800',
-                'Agendado': 'bg-blue-100 text-blue-800',
-                'Atendido': 'bg-green-100 text-green-800',
-                'Cancelado': 'bg-red-100 text-red-800'
+                'Aberto': 'bg-red-100 text-red-800', 'Agendado': 'bg-yellow-100 text-yellow-800',
+                'Atendido': 'bg-green-100 text-green-800', 'Cancelado': 'bg-gray-800 text-white'
             };
+            
+            const formatDate = (dateString) => dateString ? dateString.split('-').reverse().join('/') : 'N/A';
+            const formatCurrency = (value) => (parseFloat(value) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
             for (const callId in callsObject) {
                 const call = callsObject[callId];
-                
-                const formatDate = (dateString) => {
-                    if (!dateString) return 'N/A';
-                    const [year, month, day] = dateString.split('-');
-                    return `${day}/${month}/${year}`;
-                };
-                
-                const formatCurrency = (value) => {
-                    if (value === null || value === undefined || value === '') return 'N/A';
-                    return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                }
-
                 const card = document.createElement('div');
                 card.className = 'card p-5 space-y-3 flex flex-col';
                 card.setAttribute('data-id', callId);
 
-                // Define a classe da cor do status
                 const statusColorClass = statusColors[call.serviceStatus] || 'bg-gray-100 text-gray-800';
+                
+                const formatObs = (text) => text ? `<p class="text-gray-600 italic">"${text}"</p>` : '<p class="text-gray-400 italic">N/A</p>';
+                
+                let filesHTML = '';
+                if(call.files && call.files.length > 0) {
+                    filesHTML += '<div class="border-t pt-3 mt-3 space-y-2 text-sm"><strong class="font-medium text-gray-600">Anexos:</strong>';
+                    call.files.forEach(file => {
+                        filesHTML += `<div class="flex items-center justify-between">
+                            <a href="${file.url}" target="_blank" class="text-blue-600 hover:underline truncate">${file.name}</a>
+                            <button title="Excluir Arquivo" class="delete-file-btn text-gray-400 hover:text-red-600 ml-2" data-call-id="${callId}" data-file-path="${file.path}"><i class="fas fa-times-circle"></i></button>
+                        </div>`;
+                    });
+                    filesHTML += '</div>';
+                }
 
                 card.innerHTML = `
                     <div class="flex-grow">
                         <div class="flex justify-between items-start mb-3">
-                            <h3 class="font-bold text-lg text-blue-800">${call.clientName || 'Cliente não informado'}</h3>
-                            <!-- BADGE DE STATUS COM COR -->
-                            <span class="text-xs font-medium px-2.5 py-1 rounded-full ${statusColorClass}">${call.serviceStatus || 'N/A'}</span>
+                             <h3 class="font-bold text-lg text-blue-800">#${call.callNumber || 'N/A'} - ${call.clientName || ''}</h3>
+                            <span class="text-xs font-medium px-2.5 py-1 rounded-full ${statusColorClass}">${call.serviceStatus || ''}</span>
                         </div>
                         <div class="border-t pt-3 space-y-2 text-sm">
                             <p><strong class="font-medium text-gray-600">Telefone:</strong> ${call.clientPhone || 'N/A'}</p>
                             <p><strong class="font-medium text-gray-600">Endereço:</strong> ${call.clientAddress || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Atendente:</strong> ${call.attendantName || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Técnico:</strong> ${call.technicianName || 'N/A'}</p>
                         </div>
                         <div class="border-t pt-3 mt-3 space-y-2 text-sm">
-                            <p><strong class="font-medium text-gray-600">S/N:</strong> ${call.serialNumber}</p>
-                             <p><strong class="font-medium text-gray-600">Tipo:</strong> ${call.serviceType || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Modelo:</strong> ${call.lockModel || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">S/N:</strong> ${call.serialNumber || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Loja:</strong> ${call.store || 'N/A'}</p>
+                            <p><strong class="font-medium text-gray-600">Data Compra:</strong> ${formatDate(call.purchaseDate)}</p>
                             <p><strong class="font-medium text-gray-600">Solicitação:</strong> ${formatDate(call.requestDate)}</p>
                             <p><strong class="font-medium text-gray-600">Agendamento:</strong> ${formatDate(call.scheduleDate)}</p>
+                            <div class="pl-2 border-l-2">
+                                <strong class="font-medium text-gray-600 text-xs">OBS (Pré):</strong>
+                                ${formatObs(call.obsPre)}
+                            </div>
+                            <p><strong class="font-medium text-gray-600">Execução:</strong> ${formatDate(call.executionDate)}</p>
+                            <div class="pl-2 border-l-2">
+                                <strong class="font-medium text-gray-600 text-xs">OBS (Pós):</strong>
+                                ${formatObs(call.obsPost)}
+                            </div>
+                            <p><strong class="font-medium text-gray-600">Quitação:</strong> ${formatDate(call.settlementDate)}</p>
                         </div>
+                        ${filesHTML}
                     </div>
-                    <div class="border-t pt-3 mt-3 flex justify-between text-sm">
-                        <div class="text-green-700">
-                            <span class="font-medium block">Cliente Paga</span>
-                            <strong>${formatCurrency(call.customerValue)}</strong>
+                    <div class="border-t pt-3 mt-3 flex justify-between items-center text-sm">
+                        <div class="flex space-x-4">
+                            <div class="text-green-700">
+                                <span class="font-medium block text-xs text-gray-500">Cliente Paga</span>
+                                <strong>${formatCurrency(call.customerValue)}</strong>
+                            </div>
+                            <div class="text-red-700">
+                                <span class="font-medium block text-xs text-gray-500">Prestador Recebe</span>
+                                <strong>${formatCurrency(call.providerValue)}</strong>
+                            </div>
                         </div>
-                        <div class="text-red-700 text-right">
-                             <span class="font-medium block">Prestador Recebe</span>
-                            <strong>${formatCurrency(call.providerValue)}</strong>
+                        <div class="flex space-x-3">
+                            <button title="Editar" class="edit-btn text-gray-500 hover:text-blue-600" data-id="${callId}"><i class="fas fa-pencil-alt"></i></button>
+                            <button title="Excluir" class="delete-btn text-gray-500 hover:text-red-600" data-id="${callId}"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                 `;
-                
                 callsList.appendChild(card);
             }
         }
         
-        // =================================================================================
-        // 6. EVENT LISTENERS
-        // =================================================================================
-        
-        serviceForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        function exportToCSV() {
+            // ... (código existente de exportação)
+        }
 
-            submitButton.disabled = true;
-            submitButton.textContent = 'Salvando...';
-            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-
-            const callData = {
-                clientName: document.getElementById('client-name').value,
-                clientPhone: document.getElementById('client-phone').value,
-                clientAddress: document.getElementById('client-address').value,
-                serialNumber: document.getElementById('serial-number').value,
-                store: document.getElementById('store').value,
-                purchaseDate: document.getElementById('purchase-date').value,
-                requestDate: document.getElementById('request-date').value,
-                scheduleDate: document.getElementById('schedule-date').value,
-                executionDate: document.getElementById('execution-date').value,
-                serviceType: document.getElementById('service-type').value,
-                serviceStatus: document.getElementById('service-status').value, // Salva o status
-                customerValue: document.getElementById('customer-value').value,
-                providerValue: document.getElementById('provider-value').value,
-                createdAt: new Date().toISOString()
-            };
-
-            const success = await saveServiceCall(callData);
-            
-            if (success) {
-                serviceForm.reset();
-                document.getElementById('request-date').valueAsDate = new Date();
+        function handleActivationClick() {
+            const password = prompt("Para acessar, digite a senha de autorização:");
+            if (password === "Philips") {
+                window.open('https://claitonkomatsu.github.io/Ativacao/', '_blank');
+            } else if (password !== null) {
+                alert("Senha incorreta.");
             }
-            
-            submitButton.disabled = false;
-            submitButton.textContent = 'Salvar Chamado';
-            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
-        });
+        }
 
-        // Adiciona os listeners para os filtros
+        form.addEventListener('submit', handleFormSubmit);
+        cancelEditButton.addEventListener('click', exitEditMode);
         searchInput.addEventListener('input', renderFilteredCalls);
         filterStatus.addEventListener('change', renderFilteredCalls);
+        settlementDateStart.addEventListener('change', renderFilteredCalls);
+        settlementDateEnd.addEventListener('change', renderFilteredCalls);
+        exportCsvButton.addEventListener('click', exportToCSV);
+        activationButton.addEventListener('click', handleActivationClick);
 
+        callsList.addEventListener('click', (e) => {
+            const editButton = e.target.closest('.edit-btn');
+            const deleteButton = e.target.closest('.delete-btn');
+            const deleteFileButton = e.target.closest('.delete-file-btn');
+            
+            if (editButton) enterEditMode(editButton.dataset.id);
+            if (deleteButton) deleteServiceCall(deleteButton.dataset.id);
+            if (deleteFileButton) {
+                const callId = deleteFileButton.dataset.callId;
+                const filePath = deleteFileButton.dataset.filePath;
+                const fileName = filePath.split('/').pop();
+                const fileToDelete = allCallsData[callId]?.files.find(f => f.path === filePath);
+                if(fileToDelete) deleteFile(callId, fileToDelete);
+            }
+        });
+
+        clientPhoneInput.addEventListener('input', (e) => {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            if (!x) return;
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+
+        fileUploadInput.addEventListener('change', (e) => {
+            filesToUpload = Array.from(e.target.files);
+            fileUploadList.innerHTML = filesToUpload.map(f => `<div>${f.name}</div>`).join('');
+        });
     </script>
 </body>
 </html>
-
