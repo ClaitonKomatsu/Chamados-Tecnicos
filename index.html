@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Chamados Técnicos (Realtime DB)</title>
+    <title>Controle de Chamados</title>
     <!-- Incluindo Tailwind CSS para um design moderno e responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Importando ícones (Font Awesome) -->
@@ -27,17 +27,18 @@
         }
         .form-section {
             background-color: white;
-            padding: 2rem;
+            padding: 1.5rem; /* Padding reduzido */
             border-radius: 0.75rem;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            max-height: calc(100vh - 10rem); /* Ajuste para a barra de botões fixa */
+            overflow-y: auto; /* Adiciona rolagem vertical quando necessário */
         }
         .form-fieldset {
             border-top: 1px solid #e5e7eb;
-            padding-top: 1.5rem;
-            margin-top: 1.5rem;
+            padding-top: 1.25rem; /* Espaçamento reduzido */
+            margin-top: 1.25rem; /* Espaçamento reduzido */
         }
         #cancel-edit-button { display: none; }
-        /* Estilo para o input de arquivo */
         #file-upload-label {
             cursor: pointer;
             padding: 0.5rem 1rem;
@@ -55,58 +56,77 @@
 </head>
 <body class="antialiased text-gray-800">
 
-    <!-- Container Principal -->
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl relative">
-        <!-- BOTÃO DE ATIVAÇÃO -->
-        <button id="activation-button" class="absolute top-4 left-4 md:top-8 md:left-8 bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors">
-            ATIVAÇÃO
-        </button>
-        <!-- BOTÃO DE SUPORTE -->
-        <a href="https://homexbr.notion.site/Homex-Suporte-Tecnico-6e271639fd524a40ba189348aeabacbe" target="_blank" rel="noopener noreferrer" class="absolute top-4 right-4 md:top-8 md:right-8 bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors">
-            SUPORTE
-        </a>
+    <!-- TELA DE LOGIN -->
+    <div id="login-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm">
+            <h2 class="text-2xl font-bold text-center mb-6">Acesso Restrito</h2>
+            <form id="login-form">
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <input type="password" id="password" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500" required>
+                </div>
+                <p id="login-error" class="text-red-500 text-sm mt-2 hidden">Senha incorreta.</p>
+                <div class="mt-6">
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Entrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        <header class="mb-8 text-center pt-12">
-            <div class="mb-6">
-                <h1 class="text-5xl font-bold text-gray-800" style="font-family: 'Arial Black', sans-serif;">Homex<span class="text-2xl align-super">®</span></h1>
-                <p class="text-sm tracking-widest text-gray-600">DISTRIBUIDORA</p>
+    <!-- Container Principal (oculto por padrão) -->
+    <div id="main-container" class="container mx-auto p-4 md:p-8 max-w-7xl relative hidden">
+        
+        <!-- BARRA DE BOTÕES FIXA -->
+        <div class="fixed top-0 left-0 w-full bg-gray-800 shadow-lg z-40">
+            <div class="container mx-auto flex justify-between items-center p-2">
+                <button id="activation-button" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors">
+                    ATIVAÇÃO
+                </button>
+                <button id="home-button" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors">
+                    PÁGINA INICIAL
+                </button>
+                <a href="https://homexbr.notion.site/Homex-Suporte-Tecnico-6e271639fd524a40ba189348aeabacbe" target="_blank" rel="noopener noreferrer" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-colors">
+                    SUPORTE
+                </a>
             </div>
-            <h1 class="text-3xl md:text-4xl font-bold text-red-600 uppercase">CONTROLE DE CHAMADOS</h1>
+        </div>
+
+        <header class="mb-8 text-center pt-16"> <!-- Padding-top ajustado -->
+             <!-- LOGOTIPO E TÍTULO REMOVIDOS -->
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1">
-                <div id="form-container" class="form-section sticky top-8">
-                    <h2 id="form-title" class="text-2xl font-semibold mb-6 border-b pb-4">Registrar Chamado</h2>
-                    <form id="service-call-form" class="space-y-4">
+                <div id="form-container" class="form-section sticky top-24">
+                    <h2 id="form-title" class="text-lg font-semibold mb-6 border-b pb-4">Registrar Chamado</h2>
+                    <form id="service-call-form" class="space-y-3">
                         <input type="hidden" id="edit-call-id">
-
                         <div>
-                            <label for="call-number" class="block text-sm font-medium text-gray-700">Número do Chamado</label>
-                            <input type="text" id="call-number" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm">
+                            <label for="call-number" class="block text-xs font-medium text-gray-700">Número do Chamado</label>
+                            <input type="text" id="call-number" disabled class="mt-1 block w-full px-2 py-1 bg-gray-100 border border-gray-300 rounded-md shadow-sm">
                         </div>
+                        <div id="last-modified-info" class="hidden text-xs text-gray-500"></div>
 
-                        <div class="space-y-4 form-fieldset">
-                             <h3 class="text-lg font-medium text-gray-800">Dados do Cliente</h3>
+                        <div class="space-y-3">
                              <div>
-                                <label for="client-name" class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
-                                <input type="text" id="client-name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="client-name" class="block text-xs font-medium text-gray-700">Nome do Cliente</label>
+                                <input type="text" id="client-name" required class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                              <div>
-                                <label for="client-phone" class="block text-sm font-medium text-gray-700">Telefone</label>
-                                <input type="tel" id="client-phone" placeholder="(99) 99999-9999" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="client-phone" class="block text-xs font-medium text-gray-700">Telefone</label>
+                                <input type="tel" id="client-phone" placeholder="(99) 99999-9999" required class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                              <div>
-                                <label for="client-address" class="block text-sm font-medium text-gray-700">Endereço</label>
-                                <input type="text" id="client-address" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="client-address" class="block text-xs font-medium text-gray-700">Endereço</label>
+                                <input type="text" id="client-address" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                         </div>
-
-                        <div class="space-y-4 form-fieldset">
-                            <h3 class="text-lg font-medium text-gray-800">Dados do Produto e Serviço</h3>
+                        <div class="space-y-3 form-fieldset">
                              <div>
-                                <label for="service-type" class="block text-sm font-medium text-gray-700">Tipo de Atendimento</label>
-                                <select id="service-type" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="service-type" class="block text-xs font-medium text-gray-700">Tipo de Atendimento</label>
+                                <select id="service-type" required class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="Instalação">Instalação</option>
                                     <option value="Garantia">Garantia</option>
                                     <option value="Suporte">Suporte</option>
@@ -115,8 +135,8 @@
                                 </select>
                             </div>
                              <div>
-                                <label for="service-status" class="block text-sm font-medium text-gray-700">Status do Chamado</label>
-                                <select id="service-status" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="service-status" class="block text-xs font-medium text-gray-700">Status do Chamado</label>
+                                <select id="service-status" required class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="Aberto">Aberto</option>
                                     <option value="Agendado">Agendado</option>
                                     <option value="Atendido">Atendido</option>
@@ -124,16 +144,16 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="attendant-name" class="block text-sm font-medium text-gray-700">Nome do Atendente</label>
-                                <input type="text" id="attendant-name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="attendant-name" class="block text-xs font-medium text-gray-700">Nome do Atendente</label>
+                                <input type="text" id="attendant-name" required class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="technician-name" class="block text-sm font-medium text-gray-700">Nome do Técnico</label>
-                                <input type="text" id="technician-name" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="technician-name" class="block text-xs font-medium text-gray-700">Nome do Técnico</label>
+                                <input type="text" id="technician-name" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="lock-model" class="block text-sm font-medium text-gray-700">Modelo da Fechadura</label>
-                                <select id="lock-model" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="lock-model" class="block text-xs font-medium text-gray-700">Modelo da Fechadura</label>
+                                <select id="lock-model" required class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="101">101</option>
                                     <option value="210">210</option>
                                     <option value="303">303</option>
@@ -149,59 +169,56 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="serial-number" class="block text-sm font-medium text-gray-700">Serial Number (SN)</label>
-                                <input type="text" id="serial-number" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="serial-number" class="block text-xs font-medium text-gray-700">Serial Number (SN)</label>
+                                <input type="text" id="serial-number" required class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="purchase-date" class="block text-sm font-medium text-gray-700">Data da Compra</label>
-                                <input type="date" id="purchase-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="purchase-date" class="block text-xs font-medium text-gray-700">Data da Compra</label>
+                                <input type="date" id="purchase-date" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="store" class="block text-sm font-medium text-gray-700">Loja</label>
-                                <input type="text" id="store" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="store" class="block text-xs font-medium text-gray-700">Loja</label>
+                                <input type="text" id="store" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="request-date" class="block text-sm font-medium text-gray-700">Data da Solicitação</label>
-                                <input type="date" id="request-date" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="request-date" class="block text-xs font-medium text-gray-700">Data da Solicitação</label>
+                                <input type="date" id="request-date" required class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="schedule-date" class="block text-sm font-medium text-gray-700">Data do Agendamento</label>
-                                <input type="date" id="schedule-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="schedule-date" class="block text-xs font-medium text-gray-700">Data do Agendamento</label>
+                                <input type="date" id="schedule-date" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="obs-pre" class="block text-sm font-medium text-gray-700">Observações (Pré-atendimento)</label>
-                                <textarea id="obs-pre" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                <label for="obs-pre" class="block text-xs font-medium text-gray-700">Observações (Pré-atendimento)</label>
+                                <textarea id="obs-pre" rows="3" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
                             </div>
                             <div>
-                                <label for="execution-date" class="block text-sm font-medium text-gray-700">Data da Execução</label>
-                                <input type="date" id="execution-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="execution-date" class="block text-xs font-medium text-gray-700">Data da Execução</label>
+                                <input type="date" id="execution-date" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="obs-post" class="block text-sm font-medium text-gray-700">Observações (Pós-atendimento)</label>
-                                <textarea id="obs-post" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                <label for="obs-post" class="block text-xs font-medium text-gray-700">Observações (Pós-atendimento)</label>
+                                <textarea id="obs-post" rows="3" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
                             </div>
                             <div>
-                                <label for="customer-value" class="block text-sm font-medium text-gray-700">Valor a Pagar (Cliente)</label>
-                                <input type="number" id="customer-value" step="0.01" min="0" placeholder="R$ 0,00" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="customer-value" class="block text-xs font-medium text-gray-700">Valor a Pagar (Cliente)</label>
+                                <input type="number" id="customer-value" step="0.01" min="0" placeholder="R$ 0,00" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="provider-value" class="block text-sm font-medium text-gray-700">Valor a Pagar (Prestador)</label>
-                                <input type="number" id="provider-value" step="0.01" min="0" placeholder="R$ 0,00" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="provider-value" class="block text-xs font-medium text-gray-700">Valor a Pagar (Prestador)</label>
+                                <input type="number" id="provider-value" step="0.01" min="0" placeholder="R$ 0,00" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                              <div>
-                                <label for="settlement-date" class="block text-sm font-medium text-gray-700">Data da Quitação</label>
-                                <input type="date" id="settlement-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <label for="settlement-date" class="block text-xs font-medium text-gray-700">Data da Quitação</label>
+                                <input type="date" id="settlement-date" class="mt-1 block w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                         </div>
-
-                         <!-- CAMPO DE UPLOAD DE ARQUIVO -->
                         <div class="space-y-2 form-fieldset">
                             <h3 class="text-lg font-medium text-gray-800">Anexos</h3>
                             <label id="file-upload-label" for="file-upload"><i class="fas fa-paperclip"></i> Anexar Arquivos</label>
                             <input type="file" id="file-upload" multiple class="hidden">
                             <div id="file-upload-list" class="text-sm text-gray-600 space-y-1"></div>
                         </div>
-
                         <div class="flex flex-col space-y-2 !mt-8">
                             <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 Salvar Chamado
@@ -213,13 +230,12 @@
                     </form>
                 </div>
             </div>
-
             <div class="lg:col-span-2">
                  <div class="mb-6 bg-white p-4 rounded-lg shadow">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Consultar Chamados</h3>
+                    <h3 class="text-base font-semibold text-gray-800 mb-3">Consultar Chamados</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input type="text" id="search-input" placeholder="Buscar por nº, nome, técnico ou S/N..." class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <select id="filter-status" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <input type="text" id="search-input" placeholder="Buscar por nº, nome, técnico ou S/N..." class="text-sm block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <select id="filter-status" class="text-sm block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="Todos">Todos os Status</option>
                             <option value="Aberto">Aberto</option>
                             <option value="Agendado">Agendado</option>
@@ -229,12 +245,12 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t">
                         <div>
-                            <label for="settlement-date-start" class="block text-sm font-medium text-gray-700">Quitação de:</label>
-                            <input type="date" id="settlement-date-start" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <label for="settlement-date-start" class="block text-xs font-medium text-gray-700">Quitação de:</label>
+                            <input type="date" id="settlement-date-start" class="text-sm mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
-                            <label for="settlement-date-end" class="block text-sm font-medium text-gray-700">Até:</label>
-                            <input type="date" id="settlement-date-end" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <label for="settlement-date-end" class="block text-xs font-medium text-gray-700">Até:</label>
+                            <input type="date" id="settlement-date-end" class="text-sm mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         </div>
                     </div>
                     <div class="mt-4 pt-4 border-t">
@@ -259,7 +275,7 @@
                     </div>
                  </div>
 
-                 <h2 class="text-2xl font-semibold mb-6 text-gray-900">Chamados Registrados</h2>
+                 <h2 class="text-lg font-semibold mb-6 text-gray-900">Chamados Registrados</h2>
                  <div id="loading-state" class="text-center p-8">
                      <p class="text-gray-500">Carregando chamados...</p>
                  </div>
@@ -296,8 +312,16 @@
         let allCallsData = {};
         let currentFilteredData = {};
         let filesToUpload = [];
+        let currentUser = null;
 
+        const loginOverlay = document.getElementById('login-overlay');
+        const mainContainer = document.getElementById('main-container');
+        const loginForm = document.getElementById('login-form');
+        const passwordInput = document.getElementById('password');
+        const loginError = document.getElementById('login-error');
+        
         const form = document.getElementById('service-call-form');
+        const formContainer = document.getElementById('form-container');
         const callsList = document.getElementById('service-calls-list');
         const loadingState = document.getElementById('loading-state');
         const emptyState = document.getElementById('empty-state');
@@ -315,14 +339,43 @@
         const clientPhoneInput = document.getElementById('client-phone');
         const exportCsvButton = document.getElementById('export-csv-button');
         const activationButton = document.getElementById('activation-button');
+        const homeButton = document.getElementById('home-button');
         const fileUploadInput = document.getElementById('file-upload');
         const fileUploadList = document.getElementById('file-upload-list');
+        const lastModifiedInfo = document.getElementById('last-modified-info');
+
+        const userPasswords = {
+            "HomexBR": "Claiton",
+            "HomexCD": "Douglas",
+            "HomexAT": "Bená",
+            "HomexADM": "Marcelo",
+            "HomexDIR": "Rodrigo",
+            "HomexOU": "Outros"
+        };
         
-        onAuthStateChanged(auth, user => {
-            if (user) fetchServiceCalls();
-            else signInAnonymously(auth).catch(err => console.error("Auth Error:", err));
+        function startApp() {
+            onAuthStateChanged(auth, user => {
+                if (user) fetchServiceCalls();
+                else signInAnonymously(auth).catch(err => console.error("Auth Error:", err));
+            });
+        }
+        
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const enteredPassword = passwordInput.value;
+            const user = userPasswords[enteredPassword];
+
+            if (user) {
+                currentUser = user;
+                loginOverlay.classList.add('hidden');
+                mainContainer.classList.remove('hidden');
+                startApp();
+            } else {
+                loginError.classList.remove('hidden');
+                passwordInput.value = '';
+            }
         });
-        
+
         function fetchServiceCalls() {
             const callsRef = ref(db, 'service_calls');
             onValue(callsRef, snapshot => {
@@ -349,6 +402,8 @@
         async function handleFormSubmit(e) {
             e.preventDefault();
             const callId = document.getElementById('edit-call-id').value;
+            const timestamp = new Date().toLocaleString('pt-BR');
+            
             let callData = {
                 callNumber: document.getElementById('call-number').value,
                 clientName: document.getElementById('client-name').value,
@@ -370,17 +425,21 @@
                 customerValue: document.getElementById('customer-value').value,
                 providerValue: document.getElementById('provider-value').value,
                 settlementDate: document.getElementById('settlement-date').value,
-                createdAt: allCallsData[callId]?.createdAt || new Date().toISOString()
+                lastModified: `${currentUser} - ${timestamp}`
             };
+
+            if (!callId) {
+                callData.createdAt = new Date().toISOString();
+            }
 
             submitButton.disabled = true;
             submitButton.textContent = 'Salvando...';
 
             try {
                 let currentCallId = callId;
-                if (currentCallId) { // MODO EDIÇÃO
+                if (currentCallId) {
                     await update(ref(db, `service_calls/${currentCallId}`), callData);
-                } else { // MODO CRIAÇÃO
+                } else {
                     const newCallRef = await push(ref(db, 'service_calls'), callData);
                     currentCallId = newCallRef.key;
                 }
@@ -392,7 +451,7 @@
                     await update(ref(db, `service_calls/${currentCallId}`), { files: updatedFiles });
                 }
 
-                exitEditMode();
+                resetToHome();
             } catch (error) {
                 console.error("Save/Update Error:", error);
                 alert("Erro ao salvar os dados.");
@@ -403,18 +462,12 @@
 
         async function deleteFile(callId, fileToDelete) {
              if (!confirm(`Tem certeza que deseja excluir o arquivo "${fileToDelete.name}"?`)) return;
-
              try {
-                // Deleta do Storage
                 const fileStorageRef = storageRef(storage, fileToDelete.path);
                 await deleteObject(fileStorageRef);
-
-                // Remove do Realtime Database
                 const currentFiles = allCallsData[callId]?.files || [];
                 const updatedFiles = currentFiles.filter(file => file.path !== fileToDelete.path);
                 await update(ref(db, `service_calls/${callId}`), { files: updatedFiles });
-
-                console.log("Arquivo excluído com sucesso.");
              } catch(error) {
                  console.error("Erro ao excluir arquivo:", error);
                  alert("Não foi possível excluir o arquivo.");
@@ -424,7 +477,6 @@
         async function deleteServiceCall(callId) {
             const password = prompt("Para excluir, digite a senha de autorização:");
             if (password === null) return;
-
             if (password === "Homex") {
                 if (confirm('Tem certeza que deseja excluir este chamado? Esta ação não pode ser desfeita.')) {
                     try {
@@ -432,6 +484,7 @@
                         const deleteFilePromises = filesToDelete.map(file => deleteObject(storageRef(storage, file.path)));
                         await Promise.all(deleteFilePromises);
                         await remove(ref(db, `service_calls/${callId}`));
+                        resetToHome();
                     } catch (error) {
                         console.error("Delete Error:", error);
                         alert("Erro ao excluir o chamado.");
@@ -480,6 +533,11 @@
             document.getElementById('provider-value').value = call.providerValue || '';
             document.getElementById('settlement-date').value = call.settlementDate || '';
 
+            if (call.lastModified) {
+                lastModifiedInfo.textContent = `Última alteração: ${call.lastModified}`;
+                lastModifiedInfo.classList.remove('hidden');
+            }
+
             formTitle.textContent = 'Editando Chamado';
             submitButton.textContent = 'Atualizar Chamado';
             cancelEditButton.style.display = 'block';
@@ -497,6 +555,8 @@
             cancelEditButton.style.display = 'none';
             fileUploadList.innerHTML = '';
             filesToUpload = [];
+            lastModifiedInfo.classList.add('hidden');
+            formContainer.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function renderFilteredCalls() {
@@ -623,6 +683,9 @@
                             <p><strong class="font-medium text-gray-600">Quitação:</strong> ${formatDate(call.settlementDate)}</p>
                         </div>
                         ${filesHTML}
+                        <div class="border-t pt-2 mt-2 text-xs text-gray-400">
+                           Última alteração: ${call.lastModified || 'N/A'}
+                        </div>
                     </div>
                     <div class="border-t pt-3 mt-3 flex justify-between items-center text-sm">
                         <div class="flex space-x-4">
@@ -658,6 +721,16 @@
             }
         }
 
+        function resetToHome() {
+            exitEditMode();
+            searchInput.value = '';
+            filterStatus.value = 'Todos';
+            settlementDateStart.value = '';
+            settlementDateEnd.value = '';
+            renderFilteredCalls();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         form.addEventListener('submit', handleFormSubmit);
         cancelEditButton.addEventListener('click', exitEditMode);
         searchInput.addEventListener('input', renderFilteredCalls);
@@ -666,6 +739,7 @@
         settlementDateEnd.addEventListener('change', renderFilteredCalls);
         exportCsvButton.addEventListener('click', exportToCSV);
         activationButton.addEventListener('click', handleActivationClick);
+        homeButton.addEventListener('click', resetToHome);
 
         callsList.addEventListener('click', (e) => {
             const editButton = e.target.closest('.edit-btn');
@@ -677,7 +751,6 @@
             if (deleteFileButton) {
                 const callId = deleteFileButton.dataset.callId;
                 const filePath = deleteFileButton.dataset.filePath;
-                const fileName = filePath.split('/').pop();
                 const fileToDelete = allCallsData[callId]?.files.find(f => f.path === filePath);
                 if(fileToDelete) deleteFile(callId, fileToDelete);
             }
